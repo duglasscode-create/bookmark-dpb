@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 
-type Theme = "dark" | "light" | "system";
+type Theme = "dark" | "light" | "system" | "custom";
 
 type ThemeSwitcherProps = {
   theme: Theme;
@@ -13,6 +13,7 @@ type ThemeSwitcherProps = {
 const themeOptions = [
   { value: "dark" as Theme, icon: "🌙", label: "Oscuro" },
   { value: "light" as Theme, icon: "☀️", label: "Claro" },
+  { value: "custom" as Theme, icon: "🎨", label: "Personalizado" },
   { value: "system" as Theme, icon: "💻", label: "Sistema" },
 ];
 

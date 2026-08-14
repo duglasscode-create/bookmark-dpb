@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { TagSelector } from "./TagSelector";
+import { IconPicker } from "./IconPicker";
 import { applyAutoRules } from "@/utils/autoRules";
 
 type Tag = {
@@ -40,6 +41,7 @@ export function AddBookmarkModal({
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [saving, setSaving] = useState(false);
+  const [icon, setIcon] = useState<string | null>(null);
   const [duplicateWarning, setDuplicateWarning] = useState<{
     id: string;
     url: string;
@@ -60,6 +62,7 @@ export function AddBookmarkModal({
       setSelectedCollection("");
       setSelectedTagIds([]);
       setDuplicateWarning(null);
+      setIcon(null);
     }
   }, [isOpen]);
 
@@ -178,18 +181,19 @@ export function AddBookmarkModal({
       }
     }
 
-    const { data: newBookmark, error: bookmarkError } = await supabase
-      .from("bookmarks")
-      .insert({
-        user_id: userId,
-        url: finalUrl,
-        domain: domain,
-        title: title.trim() || finalUrl,
-        description: description.trim() || null,
-        source: "manual",
-      })
-      .select()
-      .single();
+   const { data: newBookmark, error: bookmarkError } = await supabase
+  .from("bookmarks")
+  .insert({
+    user_id: userId,
+    url: finalUrl,
+    domain: domain,
+    title: title.trim() || finalUrl,
+    description: description.trim() || null,
+    icon: icon || null,
+    source: "manual",
+  })
+  .select()
+  .single();
 
     if (bookmarkError) {
       alert("Error al guardar: " + bookmarkError.message);
@@ -375,7 +379,10 @@ export function AddBookmarkModal({
               💡 Si dejas "Sin colección", se aplicarán las reglas automáticas.
             </p>
           </div>
-
+{/* Icono personalizado */}
+<div>
+  <IconPicker value={icon} onChange={setIcon} isDarkMode={true} />
+</div>
           {/* Etiquetas */}
           <div>
             <label className="mb-3 block text-sm font-medium text-slate-300">

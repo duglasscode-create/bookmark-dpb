@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { TagBadge } from "./TagBadge";
+import { IconDisplay } from "./IconPicker";
 import { getSmallScreenshotUrl } from "@/utils/screenshot";
 
 type BookmarkTag = {
@@ -13,6 +14,7 @@ type BookmarkTag = {
 type BookmarkCardProps = {
   id: string;
   url: string;
+  icon?: string | null;
   domain: string | null;
   title: string | null;
   description: string | null;
@@ -65,6 +67,7 @@ const getFaviconUrl = (domain: string | null): string | null => {
 export function BookmarkCard({
   id,
   url,
+  icon,
   domain,
   title,
   description,
@@ -93,7 +96,6 @@ export function BookmarkCard({
   const isPending = read_status === "pending";
   const hasNote = note && note.trim().length > 0;
 
-  // Checkbox de selección
   const SelectionCheckbox = () => {
     if (!selectionMode) return null;
     return (
@@ -117,7 +119,6 @@ export function BookmarkCard({
     );
   };
 
-  // Botón de leer después / marcar leído
   const ReadLaterButton = () => {
     if (!onToggleReadLater) return null;
     return (
@@ -166,7 +167,6 @@ export function BookmarkCard({
           </button>
         )}
 
-        {/* Indicador de fijado en vista lista */}
         {is_pinned && (
           <span className="shrink-0 text-lg" title="Marcador fijado">
             📌
@@ -174,7 +174,9 @@ export function BookmarkCard({
         )}
 
         <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-800">
-          {faviconUrl ? (
+          {icon ? (
+            <IconDisplay icon={icon} size={20} />
+          ) : faviconUrl ? (
             <img
               src={faviconUrl}
               alt=""
@@ -232,7 +234,6 @@ export function BookmarkCard({
         </div>
 
         <div className="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100">
-          {/* NUEVO: Botón de fijar */}
           {onTogglePin && (
             <button
               onClick={() => onTogglePin(id, is_pinned)}
@@ -309,7 +310,6 @@ export function BookmarkCard({
     >
       <SelectionCheckbox />
 
-      {/* NUEVO: Indicador de fijado */}
       {is_pinned && (
         <div className="absolute left-3 top-3 z-20">
           <span
@@ -321,7 +321,6 @@ export function BookmarkCard({
         </div>
       )}
 
-      {/* Indicador de pendiente */}
       {isPending && !is_pinned && (
         <div className="absolute left-3 top-3 z-20">
           <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-xs font-bold text-white shadow-lg">
@@ -330,7 +329,6 @@ export function BookmarkCard({
         </div>
       )}
 
-      {/* Fondo con captura */}
       <div
         className={`relative flex h-36 items-center justify-center overflow-hidden bg-gradient-to-br ${gradientColor}`}
       >
@@ -353,7 +351,11 @@ export function BookmarkCard({
           }`}
         ></div>
 
-        {faviconUrl ? (
+        {icon ? (
+          <div className="relative z-10 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm shadow-lg">
+            <IconDisplay icon={icon} size={32} />
+          </div>
+        ) : faviconUrl ? (
           <div className="relative z-10 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm shadow-lg">
             <img
               src={faviconUrl}
@@ -369,9 +371,7 @@ export function BookmarkCard({
         )}
       </div>
 
-      {/* Botones flotantes */}
       <div className="absolute right-3 top-3 z-20 flex gap-2 opacity-0 transition group-hover:opacity-100">
-        {/* NUEVO: Botón de fijar */}
         {onTogglePin && (
           <button
             onClick={() => onTogglePin(id, is_pinned)}
@@ -422,7 +422,6 @@ export function BookmarkCard({
         </div>
       )}
 
-      {/* Contenido */}
       <div className="p-4">
         <a
           href={url}
@@ -437,7 +436,6 @@ export function BookmarkCard({
           {description || "Sin descripción"}
         </p>
 
-        {/* Nota adhesiva */}
         {hasNote && (
           <div className="mb-3 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2">
             <p className="text-xs text-amber-400/90 line-clamp-2 flex items-start gap-1.5">
@@ -475,7 +473,9 @@ export function BookmarkCard({
 
         <div className="flex items-center gap-2 text-xs text-slate-500">
           <span className="inline-flex h-4 w-4 items-center justify-center overflow-hidden rounded">
-            {faviconUrl ? (
+            {icon ? (
+              <IconDisplay icon={icon} size={12} />
+            ) : faviconUrl ? (
               <img
                 src={faviconUrl}
                 alt=""

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { TagBadge } from "./TagBadge";
+import { IconPicker } from "./IconPicker";
 
 type Tag = {
   id: string;
@@ -26,6 +27,7 @@ type EditBookmarkModalProps = {
     description: string | null;
     note: string | null;
     domain: string | null;
+    icon?: string | null;
   } | null;
   userId: string;
   collections: Collection[];
@@ -46,12 +48,12 @@ export function EditBookmarkModal({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [note, setNote] = useState("");
+  const [icon, setIcon] = useState<string | null>(null);
   const [selectedCollection, setSelectedCollection] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [loadingTags, setLoadingTags] = useState(false);
 
-  // NUEVO: Estado para el recordatorio
   const [reminderDate, setReminderDate] = useState("");
   const [reminderNote, setReminderNote] = useState("");
   const [existingReminder, setExistingReminder] = useState<string | null>(null);
@@ -61,6 +63,7 @@ export function EditBookmarkModal({
       setTitle(bookmark.title || "");
       setDescription(bookmark.description || "");
       setNote(bookmark.note || "");
+      setIcon(bookmark.icon || null);
       setReminderDate("");
       setReminderNote("");
       setExistingReminder(null);
@@ -73,7 +76,6 @@ export function EditBookmarkModal({
 
     setLoadingTags(true);
 
-    // Cargar colección
     const { data: collectionData } = await supabase
       .from("bookmark_collections")
       .select("collection_id")
@@ -86,7 +88,6 @@ export function EditBookmarkModal({
       setSelectedCollection("");
     }
 
-    // Cargar etiquetas
     const { data: tagData } = await supabase
       .from("bookmark_tags")
       .select("tag_id")
@@ -98,7 +99,6 @@ export function EditBookmarkModal({
       setSelectedTagIds([]);
     }
 
-    // NUEVO: Cargar recordatorio existente
     const { data: reminderData } = await supabase
       .from("reminders")
       .select("id, remind_at, note")
@@ -110,7 +110,6 @@ export function EditBookmarkModal({
     if (reminderData && reminderData.length > 0) {
       const reminder = reminderData[0];
       setExistingReminder(reminder.id);
-      // Convertir a formato datetime-local
       const date = new Date(reminder.remind_at);
       const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
         .toISOString()
@@ -135,13 +134,13 @@ export function EditBookmarkModal({
 
     setSaving(true);
 
-    // Actualizar título, descripción y nota
     const { error: bookmarkError } = await supabase
       .from("bookmarks")
       .update({
         title: title.trim() || bookmark.url,
         description: description.trim() || null,
         note: note.trim() || null,
+        icon: icon || null,
       })
       .eq("id", bookmark.id);
 
@@ -151,7 +150,6 @@ export function EditBookmarkModal({
       return;
     }
 
-    // Actualizar colección
     await supabase
       .from("bookmark_collections")
       .delete()
@@ -165,7 +163,6 @@ export function EditBookmarkModal({
       });
     }
 
-    // Actualizar etiquetas
     await supabase
       .from("bookmark_tags")
       .delete()
@@ -181,12 +178,10 @@ export function EditBookmarkModal({
       await supabase.from("bookmark_tags").insert(tagInserts);
     }
 
-    // NUEVO: Manejar recordatorio
     if (reminderDate) {
       const remindAt = new Date(reminderDate).toISOString();
 
       if (existingReminder) {
-        // Actualizar recordatorio existente
         await supabase
           .from("reminders")
           .update({
@@ -196,7 +191,6 @@ export function EditBookmarkModal({
           })
           .eq("id", existingReminder);
       } else {
-        // Crear nuevo recordatorio
         await supabase.from("reminders").insert({
           user_id: userId,
           bookmark_id: bookmark.id,
@@ -205,7 +199,6 @@ export function EditBookmarkModal({
         });
       }
     } else if (existingReminder) {
-      // Si se quitó la fecha, eliminar el recordatorio existente
       await supabase.from("reminders").delete().eq("id", existingReminder);
     }
 
@@ -224,7 +217,6 @@ export function EditBookmarkModal({
       ></div>
 
       <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
-        {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-white">
             ✏️ Editar marcador
@@ -237,7 +229,6 @@ export function EditBookmarkModal({
           </button>
         </div>
 
-        {/* URL (solo lectura) */}
         <div className="mb-4">
           <label className="mb-2 block text-sm font-medium text-slate-300">
             URL
@@ -250,7 +241,6 @@ export function EditBookmarkModal({
           </div>
         </div>
 
-        {/* Título */}
         <div className="mb-4">
           <label className="mb-2 block text-sm font-medium text-slate-300">
             Título
@@ -264,7 +254,6 @@ export function EditBookmarkModal({
           />
         </div>
 
-        {/* Descripción */}
         <div className="mb-4">
           <label className="mb-2 block text-sm font-medium text-slate-300">
             Descripción
@@ -278,7 +267,10 @@ export function EditBookmarkModal({
           />
         </div>
 
-        {/* Nota adhesiva */}
+        <div className="mb-4">
+          <IconPicker value={icon} onChange={setIcon} isDarkMode={true} />
+        </div>
+
         <div className="mb-4">
           <label className="mb-2 block text-sm font-medium text-slate-300 flex items-center gap-2">
             <span>📝</span> Nota personal
@@ -292,7 +284,6 @@ export function EditBookmarkModal({
           />
         </div>
 
-        {/* NUEVO: Recordatorio */}
         <div className="mb-4">
           <label className="mb-2 block text-sm font-medium text-slate-300 flex items-center gap-2">
             <span>⏰</span> Recordatorio
@@ -317,7 +308,6 @@ export function EditBookmarkModal({
           </p>
         </div>
 
-        {/* Colección */}
         <div className="mb-4">
           <label className="mb-2 block text-sm font-medium text-slate-300">
             Colección
@@ -336,7 +326,6 @@ export function EditBookmarkModal({
           </select>
         </div>
 
-        {/* Etiquetas */}
         <div className="mb-6">
           <label className="mb-3 block text-sm font-medium text-slate-300">
             🏷️ Etiquetas
@@ -371,7 +360,6 @@ export function EditBookmarkModal({
           )}
         </div>
 
-        {/* Botones */}
         <div className="flex gap-3">
           <button
             onClick={onClose}

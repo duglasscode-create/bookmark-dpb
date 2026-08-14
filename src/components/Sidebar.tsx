@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ExportButton } from "./ExportButton";
+import { IconDisplay } from "./IconPicker";
 
 type Collection = {
   id: string;
@@ -25,6 +26,7 @@ type SidebarProps = {
   activeFilter: string;
   onSelectFilter: (filter: string) => void;
   onNewCollection: () => void;
+  onEditCollection: (collectionId: string) => void;
   onDeleteCollection: (collectionId: string, collectionName: string) => void;
   onShareCollection: (collectionId: string) => void;
   onReorderCollections: (orderedIds: string[]) => void;
@@ -36,7 +38,6 @@ type SidebarProps = {
   collectionCounts: Record<string, number>;
   isDarkMode?: boolean;
   onManageTags: () => void;
-  // NUEVO: Props para móvil
   isMobileOpen: boolean;
   onMobileClose: () => void;
 };
@@ -63,6 +64,7 @@ export function Sidebar({
   activeFilter,
   onSelectFilter,
   onNewCollection,
+  onEditCollection,
   onDeleteCollection,
   onShareCollection,
   onReorderCollections,
@@ -114,10 +116,8 @@ export function Sidebar({
     });
   };
 
-  // NUEVO: Manejar selección de filtro y cerrar en móvil
   const handleSelectFilter = (filter: string) => {
     onSelectFilter(filter);
-    // Cerrar el sidebar en móvil al seleccionar
     if (window.innerWidth < 768) {
       onMobileClose();
     }
@@ -195,7 +195,7 @@ export function Sidebar({
           style={{ paddingLeft: `${depth * 12}px` }}
         >
           <div className="absolute left-1 hidden group-hover:flex flex-col gap-0.5 text-slate-600 cursor-grab">
-            <span className="text-[8px]">⋮⋮</span>
+            <span className="text-[8px]">⋮</span>
           </div>
 
           <button
@@ -231,13 +231,21 @@ export function Sidebar({
               <span className="w-4"></span>
             )}
 
-            <span
-              className={`h-3 w-3 rounded-full ${
-                colorMap[collection.color || "slate"] || "bg-slate-500"
-              }`}
-            ></span>
-            <span className="truncate flex-1">
-              {collection.icon && <span className="mr-1.5">{collection.icon}</span>}
+            {collection.color ? (
+              <span
+                className={`h-3 w-3 rounded-full ${
+                  colorMap[collection.color] || "bg-slate-500"
+                }`}
+              ></span>
+            ) : (
+              <span className="h-3 w-3 shrink-0"></span>
+            )}
+            <span className="truncate flex-1 flex items-center gap-1.5">
+              {collection.icon && (
+                <span className="inline-flex shrink-0 items-center">
+                  <IconDisplay icon={collection.icon} size={16} />
+                </span>
+              )}
               {collection.name}
             </span>
 
@@ -261,6 +269,28 @@ export function Sidebar({
           </button>
 
           <div className="absolute right-2 hidden items-center gap-1 group-hover:flex">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditCollection(collection.id);
+              }}
+              className={`flex h-6 w-6 items-center justify-center rounded-lg transition ${
+                isDarkMode
+                  ? "text-slate-500 hover:bg-blue-500/20 hover:text-blue-400"
+                  : "text-slate-500 hover:bg-blue-100 hover:text-blue-600"
+              }`}
+              title={`Editar colección "${collection.name}"`}
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              </svg>
+            </button>
+
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -313,7 +343,6 @@ export function Sidebar({
 
   return (
     <>
-      {/* NUEVO: Overlay para móvil */}
       {isMobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
@@ -334,7 +363,6 @@ export function Sidebar({
           }
         `}
       >
-        {/* Logo con botón de cerrar en móvil */}
         <div
           className={`flex items-center justify-between border-b px-5 py-4 ${
             isDarkMode ? "border-slate-800" : "border-slate-200"
@@ -362,7 +390,6 @@ export function Sidebar({
             </div>
           </div>
 
-          {/* NUEVO: Botón cerrar en móvil */}
           <button
             onClick={onMobileClose}
             className={`flex h-8 w-8 items-center justify-center rounded-lg transition md:hidden ${
@@ -378,7 +405,6 @@ export function Sidebar({
           </button>
         </div>
 
-        {/* Navegación principal */}
         <nav className="flex-1 overflow-y-auto p-4">
           <p
             className={`mb-2 px-3 text-xs font-semibold uppercase tracking-wider ${
@@ -567,7 +593,6 @@ export function Sidebar({
             </button>
           </div>
 
-          {/* Colecciones */}
           <div className="mt-6">
             <div className="mb-2 flex items-center justify-between px-3">
               <button
@@ -658,7 +683,6 @@ export function Sidebar({
             )}
           </div>
 
-          {/* Etiquetas */}
           {tags.length > 0 && (
             <div className="mt-6">
               <div className="mb-2 flex items-center justify-between px-3">
@@ -750,7 +774,6 @@ export function Sidebar({
           )}
         </nav>
 
-        {/* Footer */}
         <div
           className={`border-t p-4 ${
             isDarkMode ? "border-slate-800" : "border-slate-200"

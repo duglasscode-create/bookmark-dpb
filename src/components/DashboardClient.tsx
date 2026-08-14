@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import type { ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Sidebar } from "./Sidebar";
 import { BookmarkManager } from "./BookmarkManager";
@@ -11,6 +12,7 @@ import { RemindersPanel } from "./RemindersPanel";
 import { ActivityPanel } from "./ActivityPanel";
 import { AutoRulesPanel } from "./AutoRulesPanel";
 import { CollectionModal } from "./CollectionModal";
+import { EditCollectionModal } from "./EditCollectionModal";
 import { ImportModal } from "./ImportModal";
 import { ShortcutsHelp } from "./ShortcutsHelp";
 import { ShareCollectionModal } from "./ShareCollectionModal";
@@ -19,9 +21,10 @@ import { TagsManagerModal } from "./TagsManagerModal";
 import { ViewSwitcher, type ViewMode } from "./ViewSwitcher";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { LogoutButton } from "./LogoutButton";
+import { IconDisplay } from "./IconPicker";
 import { logActivity } from "@/utils/activityLog";
 
-type Theme = "dark" | "light" | "system";
+type Theme = "dark" | "light" | "system" | "custom";
 
 type Collection = {
   id: string;
@@ -72,8 +75,11 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
   const [theme, setTheme] = useState<Theme>("dark");
   const [isTagsManagerOpen, setIsTagsManagerOpen] = useState(false);
 
-  // NUEVO: Estado para sidebar móvil
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  const [isEditCollectionModalOpen, setIsEditCollectionModalOpen] = useState(false);
+  const [editCollectionId, setEditCollectionId] = useState<string | null>(null);
+  const [isSavingCollectionEdit, setIsSavingCollectionEdit] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -232,6 +238,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
   const getIsDarkMode = () => {
     if (theme === "dark") return true;
     if (theme === "light") return false;
+    if (theme === "custom") return false;
     if (typeof window !== "undefined") {
       return window.matchMedia("(prefers-color-scheme: dark)").matches;
     }
@@ -414,6 +421,44 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
     setIsSavingCollection(false);
   };
 
+  const handleEditCollection = (collectionId: string) => {
+    setEditCollectionId(collectionId);
+    setIsEditCollectionModalOpen(true);
+  };
+
+  const handleSaveCollectionEdit = async (
+    collectionId: string,
+    name: string,
+    color: string,
+    icon: string,
+    parentId: string
+  ) => {
+    setIsSavingCollectionEdit(true);
+
+    const { error } = await supabase
+      .from("collections")
+      .update({
+        name,
+        slug: name.toLowerCase().replace(/\s+/g, "-"),
+        color,
+        icon,
+        parent_id: parentId || null,
+      })
+      .eq("id", collectionId)
+      .eq("user_id", userId);
+
+    if (!error) {
+      fetchCollections();
+      setIsEditCollectionModalOpen(false);
+      setEditCollectionId(null);
+      logActivity(supabase, userId, "collection_updated", "collection", collectionId, name);
+    } else {
+      alert("Error al actualizar colección: " + error.message);
+    }
+
+    setIsSavingCollectionEdit(false);
+  };
+
   const handleDeleteCollection = async (
     collectionId: string,
     collectionName: string
@@ -494,7 +539,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
     ? collections.find((c) => c.id === shareCollectionId) || null
     : null;
 
-  const getFilterTitle = () => {
+  const getFilterTitle = (): ReactNode => {
     if (activeFilter === "all") return "📚 Todos los marcadores";
     if (activeFilter === "favorites") return "⭐ Favoritos";
     if (activeFilter === "trash") return "🗑️ Papelera";
@@ -512,9 +557,21 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
     }
 
     const collection = collections.find((c) => c.id === activeFilter);
-    return collection
-      ? `${collection.icon || "📁"} ${collection.name}`
-      : "Colección";
+    if (collection) {
+      return (
+        <span className="flex items-center gap-2">
+          {collection.icon ? (
+            <span className="inline-flex items-center">
+              <IconDisplay icon={collection.icon} size={20} />
+            </span>
+          ) : (
+            <span>📁</span>
+          )}
+          {collection.name}
+        </span>
+      );
+    }
+    return "Colección";
   };
 
   const showViewControls =
@@ -578,6 +635,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
         activeFilter={activeFilter}
         onSelectFilter={setActiveFilter}
         onNewCollection={() => setIsModalOpen(true)}
+        onEditCollection={handleEditCollection}
         onDeleteCollection={handleDeleteCollection}
         onShareCollection={handleShareCollection}
         onReorderCollections={handleReorderCollections}
@@ -594,7 +652,6 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
       />
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header responsive */}
         <header
           className={`flex items-center justify-between border-b px-4 md:px-6 py-3 md:py-4 ${
             isDarkMode
@@ -603,7 +660,6 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
           }`}
         >
           <div className="flex items-center gap-3 min-w-0">
-            {/* NUEVO: Botón hamburguesa (solo móvil) */}
             <button
               onClick={() => setIsMobileSidebarOpen(true)}
               className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition md:hidden ${
@@ -716,7 +772,6 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
           </div>
         </header>
 
-        {/* NUEVO: Barra de vista móvil (solo móvil, cuando aplica) */}
         {showViewControls && (
           <div
             className={`flex md:hidden items-center justify-between gap-2 border-b px-4 py-2 ${
@@ -748,13 +803,29 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
         </main>
       </div>
 
-      {/* Modales */}
       <CollectionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleCreateCollection}
         isSaving={isSavingCollection}
         collections={collections}
+      />
+
+      <EditCollectionModal
+        isOpen={isEditCollectionModalOpen}
+        onClose={() => {
+          setIsEditCollectionModalOpen(false);
+          setEditCollectionId(null);
+        }}
+        onSave={handleSaveCollectionEdit}
+        isSaving={isSavingCollectionEdit}
+        collection={
+          editCollectionId
+            ? collections.find((c) => c.id === editCollectionId) || null
+            : null
+        }
+        allCollections={collections}
+        isDarkMode={isDarkMode}
       />
 
       <ImportModal

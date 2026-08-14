@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { IconPicker } from "./IconPicker";
 
 type Collection = {
   id: string;
@@ -45,8 +46,6 @@ const colorClasses: Record<string, string> = {
   fuchsia: "bg-fuchsia-500",
 };
 
-const iconOptions = ["📁", "📂", "⭐", "🎯", "🔥", "💼", "🎨", "📚", "🎵", "🎮", "💡", "🚀"];
-
 export function CollectionModal({
   isOpen,
   onClose,
@@ -55,16 +54,16 @@ export function CollectionModal({
   collections = [],
 }: CollectionModalProps) {
   const [name, setName] = useState("");
-  const [color, setColor] = useState("blue");
+  const [color, setColor] = useState("none");
   const [icon, setIcon] = useState("📁");
   const [parentId, setParentId] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
-      onSave(name.trim(), color, icon, parentId);
+      onSave(name.trim(), color === "none" ? "" : color, icon || "📁", parentId);
       setName("");
-      setColor("blue");
+      setColor("none");
       setIcon("📁");
       setParentId("");
     }
@@ -108,7 +107,7 @@ export function CollectionModal({
             />
           </div>
 
-          {/* NUEVO: Colección padre */}
+          {/* Colección padre */}
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-300">
               Colección padre (opcional)
@@ -130,12 +129,24 @@ export function CollectionModal({
             </p>
           </div>
 
-          {/* Color */}
+          {/* Color (con opción SIN COLOR) */}
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-300">
               Color
             </label>
             <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setColor("none")}
+                className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-dashed transition ${
+                  color === "none"
+                    ? "border-white ring-2 ring-blue-500 ring-offset-2 ring-offset-slate-900"
+                    : "border-slate-600 hover:scale-110"
+                }`}
+                title="Sin color (solo icono)"
+              >
+                <span className="text-xs text-slate-400">✕</span>
+              </button>
               {colorOptions.map((colorOption) => (
                 <button
                   key={colorOption}
@@ -149,30 +160,13 @@ export function CollectionModal({
                 />
               ))}
             </div>
+            <p className="mt-1.5 text-xs text-slate-500">
+              💡 Elige ✕ para usar solo el icono, sin color.
+            </p>
           </div>
 
-          {/* Icono */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-300">
-              Icono
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {iconOptions.map((iconOption) => (
-                <button
-                  key={iconOption}
-                  type="button"
-                  onClick={() => setIcon(iconOption)}
-                  className={`flex h-9 w-9 items-center justify-center rounded-lg text-xl transition ${
-                    icon === iconOption
-                      ? "bg-blue-600/30 ring-2 ring-blue-500"
-                      : "bg-slate-800 hover:bg-slate-700"
-                  }`}
-                >
-                  {iconOption}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Selector de iconos */}
+          <IconPicker value={icon} onChange={setIcon} isDarkMode={true} />
 
           {/* Botones */}
           <div className="flex gap-3 pt-2">

@@ -42,6 +42,25 @@
   --hover-bg: #e2e8f0;
 }
 
+/* Tema personalizado (nuevo) */
+[data-theme="custom"] {
+  --bg-primary: #f7f7f6;
+  --bg-secondary: #ebecf0;
+  --bg-tertiary: #e2e8f0;
+  --bg-elevated: #ffffff;
+  --border-color: #d1d5db;
+  --border-light: #e5e7eb;
+  --text-primary: #1f2937;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --text-subtle: #9ca3af;
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --input-bg: #f9fafb;
+  --input-border: #d1d5db;
+  --hover-bg: #e5e7eb;
+}
+
 /* Aplicar transiciones suaves al cambiar de tema */
 * {
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;

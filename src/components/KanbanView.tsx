@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { IconDisplay } from "./IconPicker";
 
 type KanbanBookmark = {
   id: string;
@@ -10,6 +11,7 @@ type KanbanBookmark = {
   title: string | null;
   description: string | null;
   is_favorite: boolean;
+  icon?: string | null;
 };
 
 type Collection = {
@@ -60,7 +62,6 @@ export function KanbanView({
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
   const [moving, setMoving] = useState(false);
 
-  // Cargar datos al iniciar y cuando cambien las colecciones
   useEffect(() => {
     fetchData();
   }, [collections]);
@@ -70,7 +71,7 @@ export function KanbanView({
 
     const { data: bookmarksData } = await supabase
       .from("bookmarks")
-      .select("id, url, domain, title, description, is_favorite")
+      .select("id, url, domain, title, description, is_favorite, icon")
       .eq("user_id", userId)
       .eq("is_deleted", false)
       .order("created_at", { ascending: false });
@@ -173,7 +174,6 @@ export function KanbanView({
     }
   };
 
-  // NUEVO: Eliminar un marcador desde el Kanban
   const handleDeleteBookmark = async (bookmarkId: string, bookmarkTitle: string) => {
     const confirmed = confirm(
       `¿Enviar "${bookmarkTitle}" a la papelera?\n\nPodrás recuperarlo desde la papelera.`
@@ -190,10 +190,8 @@ export function KanbanView({
         .eq("id", bookmarkId);
 
       if (!error) {
-        // Quitar del estado local
         setBookmarks((prev) => prev.filter((b) => b.id !== bookmarkId));
 
-        // Actualizar contador de papelera
         if (onTrashChange) {
           onTrashChange();
         }
@@ -205,13 +203,11 @@ export function KanbanView({
     }
   };
 
-  // NUEVO: Eliminar una columna (colección) desde el Kanban
   const handleDeleteColumn = async (
     collectionId: string,
     collectionName: string
   ) => {
     onDeleteCollection(collectionId, collectionName);
-    // Los datos se refrescarán automáticamente por el useEffect
   };
 
   if (loading) {
@@ -231,7 +227,7 @@ export function KanbanView({
       id: c.id,
       name: c.name,
       icon: c.icon || "📁",
-      color: c.color || "slate",
+      color: c.color || "",
     })),
   ];
 
@@ -243,13 +239,14 @@ export function KanbanView({
           const columnKey = column.id === null ? "uncollected" : column.id;
           const isOver = dragOverColumn === columnKey;
           const isRealCollection = column.id !== null;
+          const borderClass = column.color && colorClasses[column.color] 
+            ? colorClasses[column.color] 
+            : "border-t-slate-500";
 
           return (
             <div
               key={columnKey}
-              className={`flex w-72 flex-col rounded-2xl border-t-4 bg-slate-900 transition-all ${
-                colorClasses[column.color] || "border-t-slate-500"
-              } ${
+              className={`flex w-72 flex-col rounded-2xl border-t-4 bg-slate-900 transition-all ${borderClass} ${
                 isOver
                   ? "ring-2 ring-blue-500 bg-slate-800/80"
                   : "border border-slate-800"
@@ -258,10 +255,11 @@ export function KanbanView({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, column.id)}
             >
-              {/* Header de la columna */}
               <div className="group flex items-center justify-between px-4 py-3 border-b border-slate-800">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-lg">{column.icon}</span>
+                  <span className="inline-flex shrink-0 items-center">
+                    <IconDisplay icon={column.icon} size={18} />
+                  </span>
                   <h3 className="text-sm font-semibold text-white truncate">
                     {column.name}
                   </h3>
@@ -271,7 +269,6 @@ export function KanbanView({
                     {columnBookmarks.length}
                   </span>
 
-                  {/* NUEVO: Botón eliminar columna (solo para colecciones reales) */}
                   {isRealCollection && (
                     <button
                       onClick={() =>
@@ -298,7 +295,6 @@ export function KanbanView({
                 </div>
               </div>
 
-              {/* Tarjetas de la columna */}
               <div className="flex-1 space-y-3 overflow-y-auto p-3 max-h-[60vh]">
                 {columnBookmarks.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-slate-700 p-6 text-center">
@@ -307,86 +303,94 @@ export function KanbanView({
                     </p>
                   </div>
                 ) : (
-                  columnBookmarks.map((bookmark) => (
-                    <div
-                      key={bookmark.id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, bookmark.id)}
-                      onDragEnd={handleDragEnd}
-                      className={`group cursor-grab rounded-xl border border-slate-700 bg-slate-800 p-3 transition-all hover:border-slate-600 hover:shadow-lg active:cursor-grabbing ${
-                        draggedBookmarkId === bookmark.id
-                          ? "opacity-50 rotate-2"
-                          : ""
-                      }`}
-                    >
-                      {/* Título y acciones */}
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <a
-                          href={bookmark.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 text-sm font-medium text-white hover:text-blue-400 line-clamp-2"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {bookmark.title || bookmark.url}
-                        </a>
-                        <div className="flex shrink-0 gap-1 opacity-0 group-hover:opacity-100 transition">
-                          <button
-                            onClick={() =>
-                              onRead(bookmark.url, bookmark.title || bookmark.url)
-                            }
-                            className="rounded p-1 text-xs transition hover:bg-slate-700"
-                            title="Leer"
+                  columnBookmarks.map((bookmark) => {
+                    const faviconUrl = bookmark.domain
+                      ? `https://www.google.com/s2/favicons?domain=${bookmark.domain}&sz=16`
+                      : null;
+
+                    return (
+                      <div
+                        key={bookmark.id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, bookmark.id)}
+                        onDragEnd={handleDragEnd}
+                        className={`group cursor-grab rounded-xl border border-slate-700 bg-slate-800 p-3 transition-all hover:border-slate-600 hover:shadow-lg active:cursor-grabbing ${
+                          draggedBookmarkId === bookmark.id
+                            ? "opacity-50 rotate-2"
+                            : ""
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <a
+                            href={bookmark.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 text-sm font-medium text-white hover:text-blue-400 line-clamp-2"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            📖
-                          </button>
-                          {/* NUEVO: Botón eliminar marcador */}
-                          <button
-                            onClick={() =>
-                              handleDeleteBookmark(
-                                bookmark.id,
-                                bookmark.title || bookmark.url
-                              )
-                            }
-                            className="rounded p-1 text-xs transition hover:bg-red-500/20"
-                            title="Enviar a papelera"
-                          >
-                            🗑️
-                          </button>
+                            {bookmark.title || bookmark.url}
+                          </a>
+                          <div className="flex shrink-0 gap-1 opacity-0 group-hover:opacity-100 transition">
+                            <button
+                              onClick={() =>
+                                onRead(bookmark.url, bookmark.title || bookmark.url)
+                              }
+                              className="rounded p-1 text-xs transition hover:bg-slate-700"
+                              title="Leer"
+                            >
+                              📖
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleDeleteBookmark(
+                                  bookmark.id,
+                                  bookmark.title || bookmark.url
+                                )
+                              }
+                              className="rounded p-1 text-xs transition hover:bg-red-500/20"
+                              title="Enviar a papelera"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+
+                        {bookmark.description && (
+                          <p className="mb-2 text-xs text-slate-400 line-clamp-2">
+                            {bookmark.description}
+                          </p>
+                        )}
+
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                            {bookmark.domain && (
+                              <>
+                                <span className="inline-flex shrink-0 items-center">
+                                  {bookmark.icon ? (
+                                    <IconDisplay icon={bookmark.icon} size={14} />
+                                  ) : faviconUrl ? (
+                                    <img
+                                      src={faviconUrl}
+                                      alt=""
+                                      className="h-3.5 w-3.5 rounded"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).style.display =
+                                          "none";
+                                      }}
+                                    />
+                                  ) : null}
+                                </span>
+                                <span className="truncate max-w-[100px]">
+                                  {bookmark.domain}
+                                </span>
+                              </>
+                            )}
+                          </span>
+                          {bookmark.is_favorite && <span className="text-xs">⭐</span>}
                         </div>
                       </div>
-
-                      {/* Descripción */}
-                      {bookmark.description && (
-                        <p className="mb-2 text-xs text-slate-400 line-clamp-2">
-                          {bookmark.description}
-                        </p>
-                      )}
-
-                      {/* Footer de la tarjeta */}
-                      <div className="flex items-center justify-between">
-                        <span className="flex items-center gap-1.5 text-xs text-slate-500">
-                          {bookmark.domain && (
-                            <>
-                              <img
-                                src={`https://www.google.com/s2/favicons?domain=${bookmark.domain}&sz=16`}
-                                alt=""
-                                className="h-3.5 w-3.5 rounded"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).style.display =
-                                    "none";
-                                }}
-                              />
-                              <span className="truncate max-w-[100px]">
-                                {bookmark.domain}
-                              </span>
-                            </>
-                          )}
-                        </span>
-                        {bookmark.is_favorite && <span className="text-xs">⭐</span>}
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -394,7 +398,6 @@ export function KanbanView({
         })}
       </div>
 
-      {/* Indicador de movimiento */}
       {moving && (
         <div className="fixed bottom-6 right-6 flex items-center gap-2 rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 shadow-xl">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
