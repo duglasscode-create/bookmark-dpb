@@ -614,9 +614,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
           onEditCollection={handleEditCollection}
           onDeleteCollection={handleDeleteCollection}
           onShareCollection={handleShareCollection}
-          onAddBookmark={() => setIsAddModalOpen(true)}
-          onGoNotes={() => setActiveFilter("notes")}
-        />
+v
       );
     }
 
