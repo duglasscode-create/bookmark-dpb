@@ -23,24 +23,63 @@ type NotesPanelProps = {
   isDarkMode: boolean;
 };
 
-const noteColors = ["yellow", "green", "blue", "pink", "purple", "orange"];
+// 22 colores (igual que las etiquetas)
+const noteColors = [
+  "slate", "gray", "zinc", "stone", "brown",
+  "red", "orange", "amber", "yellow", "lime",
+  "green", "emerald", "teal", "cyan", "sky",
+  "blue", "indigo", "violet", "purple", "fuchsia",
+  "pink", "rose",
+];
 
 const cardClasses: Record<string, string> = {
-  yellow: "bg-yellow-200 border-yellow-400",
-  green: "bg-green-200 border-green-400",
-  blue: "bg-blue-200 border-blue-400",
-  pink: "bg-pink-200 border-pink-400",
-  purple: "bg-purple-200 border-purple-400",
+  slate: "bg-slate-200 border-slate-400",
+  gray: "bg-gray-200 border-gray-400",
+  zinc: "bg-zinc-200 border-zinc-400",
+  stone: "bg-stone-200 border-stone-400",
+  brown: "bg-amber-200 border-amber-700",
+  red: "bg-red-200 border-red-400",
   orange: "bg-orange-200 border-orange-400",
+  amber: "bg-amber-200 border-amber-400",
+  yellow: "bg-yellow-200 border-yellow-400",
+  lime: "bg-lime-200 border-lime-400",
+  green: "bg-green-200 border-green-400",
+  emerald: "bg-emerald-200 border-emerald-400",
+  teal: "bg-teal-200 border-teal-400",
+  cyan: "bg-cyan-200 border-cyan-400",
+  sky: "bg-sky-200 border-sky-400",
+  blue: "bg-blue-200 border-blue-400",
+  indigo: "bg-indigo-200 border-indigo-400",
+  violet: "bg-violet-200 border-violet-400",
+  purple: "bg-purple-200 border-purple-400",
+  fuchsia: "bg-fuchsia-200 border-fuchsia-400",
+  pink: "bg-pink-200 border-pink-400",
+  rose: "bg-rose-200 border-rose-400",
 };
 
 const dotClasses: Record<string, string> = {
-  yellow: "bg-yellow-400",
-  green: "bg-green-400",
-  blue: "bg-blue-400",
-  pink: "bg-pink-400",
-  purple: "bg-purple-400",
+  slate: "bg-slate-400",
+  gray: "bg-gray-400",
+  zinc: "bg-zinc-400",
+  stone: "bg-stone-400",
+  brown: "bg-amber-700",
+  red: "bg-red-400",
   orange: "bg-orange-400",
+  amber: "bg-amber-400",
+  yellow: "bg-yellow-400",
+  lime: "bg-lime-400",
+  green: "bg-green-400",
+  emerald: "bg-emerald-400",
+  teal: "bg-teal-400",
+  cyan: "bg-cyan-400",
+  sky: "bg-sky-400",
+  blue: "bg-blue-400",
+  indigo: "bg-indigo-400",
+  violet: "bg-violet-400",
+  purple: "bg-purple-400",
+  fuchsia: "bg-fuchsia-400",
+  pink: "bg-pink-400",
+  rose: "bg-rose-400",
 };
 
 const imageSizeClasses: Record<string, string> = {
@@ -110,13 +149,14 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
   const [saving, setSaving] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [showTrash, setShowTrash] = useState(false);
-  const [alwaysToolbar, setAlwaysToolbar] = useState(false);
   const [fullscreenNote, setFullscreenNote] = useState<Note | null>(null);
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [drawerNoteId, setDrawerNoteId] = useState<string | null>(null);
+  const [toolbarNoteId, setToolbarNoteId] = useState<string | null>(null);
   const [draggedNoteId, setDraggedNoteId] = useState<string | null>(null);
   const [dragOverNoteId, setDragOverNoteId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(2);
   const editorRef = useRef<HTMLDivElement>(null);
+  const cardEditorRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -161,6 +201,10 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
     : notes.filter((n) => !n.deleted && n.archived === showArchived);
   const archivedCount = notes.filter((n) => !n.deleted && n.archived).length;
 
+  const drawerNote = drawerNoteId
+    ? notes.find((n) => n.id === drawerNoteId) || null
+    : null;
+
   const openNew = () => {
     setEditingNote(null);
     setTitle("");
@@ -183,6 +227,13 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
   const exec = (command: string, value?: string) => {
     editorRef.current?.focus();
     document.execCommand(command, false, value);
+  };
+
+  const execCard = (noteId: string, command: string) => {
+    const el = cardEditorRefs.current[noteId];
+    if (!el) return;
+    el.focus();
+    document.execCommand(command, false);
   };
 
   const insertImage = () => {
@@ -235,9 +286,8 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
     fetchNotes();
   };
 
-  // Papelera: borrado suave o definitivo
   const handleDelete = async (note: Note) => {
-    if (showTrash) {
+    if (showTrash || note.deleted) {
       const confirmed = confirm(
         `¿Eliminar DEFINITIVAMENTE la nota "${note.title || "Sin título"}"?\n\nEsta acción NO se puede deshacer.`
       );
@@ -254,7 +304,7 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
         .eq("id", note.id)
         .eq("user_id", userId);
     }
-    setOpenMenuId(null);
+    setDrawerNoteId(null);
     fetchNotes();
   };
 
@@ -264,7 +314,7 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
       .update({ deleted: false })
       .eq("id", note.id)
       .eq("user_id", userId);
-    setOpenMenuId(null);
+    setDrawerNoteId(null);
     fetchNotes();
   };
 
@@ -283,7 +333,6 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
       .update({ locked: !note.locked })
       .eq("id", note.id)
       .eq("user_id", userId);
-    setOpenMenuId(null);
     fetchNotes();
   };
 
@@ -293,8 +342,34 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
       .update({ archived: !note.archived })
       .eq("id", note.id)
       .eq("user_id", userId);
-    setOpenMenuId(null);
+    setDrawerNoteId(null);
     fetchNotes();
+  };
+
+  const handleUpdateColor = async (note: Note, newColor: string) => {
+    setNotes((prev) =>
+      prev.map((n) => (n.id === note.id ? { ...n, color: newColor } : n))
+    );
+    await supabase
+      .from("notes")
+      .update({ color: newColor })
+      .eq("id", note.id)
+      .eq("user_id", userId);
+  };
+
+  const handleInlineSave = async (note: Note) => {
+    const el = cardEditorRefs.current[note.id];
+    if (!el) return;
+    const html = el.innerHTML;
+    if (html === note.content) return;
+    setNotes((prev) =>
+      prev.map((n) => (n.id === note.id ? { ...n, content: html } : n))
+    );
+    await supabase
+      .from("notes")
+      .update({ content: html, updated_at: new Date().toISOString() })
+      .eq("id", note.id)
+      .eq("user_id", userId);
   };
 
   // ---- Arrastrar y reordenar ----
@@ -347,8 +422,7 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
 
   const handleDrop = async (e: React.DragEvent, targetId: string | null) => {
     e.preventDefault();
-    const draggedId =
-      e.dataTransfer.getData("text/plain") || draggedNoteId;
+    const draggedId = e.dataTransfer.getData("text/plain") || draggedNoteId;
     await reorderTo(draggedId, targetId);
     setDraggedNoteId(null);
     setDragOverNoteId(null);
@@ -433,6 +507,12 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
 
   const previewMax = zoom <= 2 ? "max-h-16" : "max-h-40";
 
+  const drawerItemClass = `flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
+    isDarkMode
+      ? "text-slate-300 hover:bg-slate-800 hover:text-white"
+      : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+  }`;
+
   return (
     <div>
       <style>{`
@@ -450,7 +530,7 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
           {visibleNotes.length} nota{visibleNotes.length !== 1 ? "s" : ""} ·
           {showTrash
             ? " Papelera: restaura o elimina definitivamente"
-            : " Arrastra para reordenar · Menú ⋮ para opciones"}
+            : " Arrastra para reordenar · ⋮ abre el panel de opciones"}
         </p>
         <div className="flex flex-wrap items-center gap-2">
           {!showTrash && (
@@ -475,19 +555,6 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
             </div>
           )}
 
-          <button
-            onClick={() => setAlwaysToolbar(!alwaysToolbar)}
-            className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${
-              alwaysToolbar
-                ? "border-blue-500 bg-blue-500/10 text-blue-500"
-                : isDarkMode
-                ? "border-slate-700 text-slate-400 hover:bg-slate-800"
-                : "border-slate-300 text-slate-600 hover:bg-slate-100"
-            }`}
-            title="Mostrar u ocultar la barra de herramientas"
-          >
-            🛠️ Barra
-          </button>
           <button
             onClick={() => {
               setShowArchived(!showArchived);
@@ -571,7 +638,7 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
         {visibleNotes.map((note) => (
           <div
             key={note.id}
-            draggable={!note.locked && !note.deleted && !showTrash}
+            draggable={!note.locked && !note.deleted && !showTrash && toolbarNoteId !== note.id}
             onDragStart={(e) => handleDragStart(e, note.id)}
             onDragEnter={(e) => e.preventDefault()}
             onDragOver={(e) => handleDragOver(e, note.id)}
@@ -596,11 +663,7 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
             } ${showTrash ? "opacity-80" : ""}`}
           >
             {/* Barra de acciones */}
-            <div
-              className={`absolute right-2 top-2 z-10 flex gap-1 transition ${
-                alwaysToolbar ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-              }`}
-            >
+            <div className="absolute right-2 top-2 z-10 flex gap-1 opacity-0 transition group-hover:opacity-100">
               {showTrash ? (
                 <>
                   <button
@@ -644,11 +707,9 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
                     📌
                   </button>
                   <button
-                    onClick={() =>
-                      setOpenMenuId(openMenuId === note.id ? null : note.id)
-                    }
+                    onClick={() => setDrawerNoteId(note.id)}
                     className="flex h-7 w-7 items-center justify-center rounded-lg text-sm transition hover:bg-black/10"
-                    title="Más opciones"
+                    title="Panel de opciones"
                   >
                     ⋮
                   </button>
@@ -656,62 +717,11 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
               )}
             </div>
 
-            {/* Menú desplegable */}
-            {openMenuId === note.id && (
-              <div className="absolute right-2 top-10 z-30 w-44 rounded-xl border border-slate-200 bg-white py-1 shadow-xl">
-                {showTrash ? (
-                  <>
-                    <button
-                      onClick={() => handleRestore(note)}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-slate-700 transition hover:bg-slate-100"
-                    >
-                      ♻️ Restaurar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(note)}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-red-600 transition hover:bg-red-50"
-                    >
-                      🗑️ Eliminar definitivamente
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => handleToggleLock(note)}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-slate-700 transition hover:bg-slate-100"
-                    >
-                      {note.locked ? "🔓 Desbloquear" : "🔒 Bloquear"}
-                    </button>
-                    <button
-                      onClick={() => handleToggleArchive(note)}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-slate-700 transition hover:bg-slate-100"
-                    >
-                      {note.archived ? "📤 Restaurar" : "🗄️ Archivar"}
-                    </button>
-                    {!note.locked && (
-                      <button
-                        onClick={() => {
-                          setOpenMenuId(null);
-                          handleDelete(note);
-                        }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-red-600 transition hover:bg-red-50"
-                      >
-                        🗑️ Enviar a papelera
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-
             {note.pinned && !showTrash && (
               <span className="absolute left-2 top-2 text-sm">📌</span>
             )}
             {note.locked && !showTrash && (
-              <span
-                className="absolute left-2 bottom-2 text-sm"
-                title="Nota bloqueada"
-              >
+              <span className="absolute left-2 bottom-2 text-sm" title="Nota bloqueada">
                 🔒
               </span>
             )}
@@ -720,10 +730,68 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
               {note.title || "Sin título"}
             </h3>
 
-            <div
-              className={`note-content flex-1 overflow-hidden text-xs text-slate-700 ${previewMax}`}
-              dangerouslySetInnerHTML={{ __html: toHtml(note.content) }}
-            ></div>
+            {/* Contenido: con toolbar inline o vista previa */}
+            {toolbarNoteId === note.id && !note.locked && !note.deleted ? (
+              <>
+                <div className="mb-1 flex flex-wrap gap-1 rounded-lg border border-black/10 bg-white/70 p-1">
+                  <button
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => execCard(note.id, "bold")}
+                    className="h-6 w-6 rounded text-[11px] font-bold text-slate-700 transition hover:bg-black/10"
+                    title="Negrita"
+                  >
+                    B
+                  </button>
+                  <button
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => execCard(note.id, "italic")}
+                    className="h-6 w-6 rounded text-[11px] italic text-slate-700 transition hover:bg-black/10"
+                    title="Cursiva"
+                  >
+                    I
+                  </button>
+                  <button
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => execCard(note.id, "underline")}
+                    className="h-6 w-6 rounded text-[11px] underline text-slate-700 transition hover:bg-black/10"
+                    title="Subrayado"
+                  >
+                    U
+                  </button>
+                  <button
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => execCard(note.id, "insertUnorderedList")}
+                    className="h-6 w-6 rounded text-[11px] text-slate-700 transition hover:bg-black/10"
+                    title="Lista"
+                  >
+                    •≡
+                  </button>
+                  <button
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => execCard(note.id, "removeFormat")}
+                    className="h-6 w-6 rounded text-[11px] text-slate-700 transition hover:bg-black/10"
+                    title="Limpiar formato"
+                  >
+                    🧹
+                  </button>
+                </div>
+                <div
+                  ref={(el) => {
+                    cardEditorRefs.current[note.id] = el;
+                  }}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={() => handleInlineSave(note)}
+                  className={`note-content flex-1 overflow-hidden text-xs text-slate-700 ${previewMax}`}
+                  dangerouslySetInnerHTML={{ __html: toHtml(note.content) }}
+                ></div>
+              </>
+            ) : (
+              <div
+                className={`note-content flex-1 overflow-hidden text-xs text-slate-700 ${previewMax}`}
+                dangerouslySetInnerHTML={{ __html: toHtml(note.content) }}
+              ></div>
+            )}
 
             {renderLinks(note)}
 
@@ -737,6 +805,172 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
           </div>
         ))}
       </div>
+
+      {/* PANEL LATERAL DERECHO (estilo Boardly) */}
+      {drawerNote && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]"
+            onClick={() => setDrawerNoteId(null)}
+          ></div>
+
+          <div
+            className={`fixed right-0 top-0 z-50 flex h-full w-72 flex-col overflow-y-auto border-l p-4 shadow-2xl ${
+              isDarkMode
+                ? "border-slate-700 bg-slate-900"
+                : "border-slate-200 bg-white"
+            }`}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3
+                className={`truncate text-sm font-semibold ${
+                  isDarkMode ? "text-white" : "text-slate-900"
+                }`}
+              >
+                {drawerNote.title || "Sin título"}
+              </h3>
+              <button
+                onClick={() => setDrawerNoteId(null)}
+                className={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
+                  isDarkMode
+                    ? "text-slate-400 hover:bg-slate-800 hover:text-white"
+                    : "text-slate-500 hover:bg-slate-100"
+                }`}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Style: 22 colores */}
+            <p
+              className={`mb-2 text-xs font-semibold uppercase tracking-wider ${
+                isDarkMode ? "text-slate-500" : "text-slate-400"
+              }`}
+            >
+              🎨 Style
+            </p>
+            <div className="mb-4 grid grid-cols-8 gap-2">
+              {noteColors.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => handleUpdateColor(drawerNote, c)}
+                  className={`h-6 w-6 rounded-full ${dotClasses[c]} transition ${
+                    drawerNote.color === c
+                      ? "ring-2 ring-blue-500 ring-offset-2"
+                      : "hover:scale-110"
+                  } ${isDarkMode ? "ring-offset-slate-900" : "ring-offset-white"}`}
+                  title={c}
+                />
+              ))}
+            </div>
+
+            {/* Show Toolbar */}
+            {!drawerNote.deleted && (
+              <button
+                onClick={() =>
+                  setToolbarNoteId(
+                    toolbarNoteId === drawerNote.id ? null : drawerNote.id
+                  )
+                }
+                disabled={drawerNote.locked}
+                className={`mb-4 flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                  toolbarNoteId === drawerNote.id
+                    ? "border-blue-500 bg-blue-500/10 text-blue-500"
+                    : isDarkMode
+                    ? "border-slate-700 text-slate-300 hover:bg-slate-800"
+                    : "border-slate-300 text-slate-700 hover:bg-slate-100"
+                }`}
+                title="Editar directamente sobre la nota"
+              >
+                <span>🛠️ Show Toolbar</span>
+                <span
+                  className={`relative h-5 w-9 rounded-full transition ${
+                    toolbarNoteId === drawerNote.id
+                      ? "bg-blue-500"
+                      : isDarkMode
+                      ? "bg-slate-700"
+                      : "bg-slate-300"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${
+                      toolbarNoteId === drawerNote.id ? "left-4" : "left-0.5"
+                    }`}
+                  ></span>
+                </span>
+              </button>
+            )}
+
+            <div
+              className={`mb-2 border-t ${
+                isDarkMode ? "border-slate-700" : "border-slate-200"
+              }`}
+            ></div>
+
+            {/* Acciones */}
+            {drawerNote.deleted ? (
+              <>
+                <button
+                  onClick={() => handleRestore(drawerNote)}
+                  className={drawerItemClass}
+                >
+                  ♻️ Restaurar
+                </button>
+                <button
+                  onClick={() => handleDelete(drawerNote)}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-red-500 transition hover:bg-red-500/10"
+                >
+                  🗑️ Eliminar definitivamente
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => {
+                    setDrawerNoteId(null);
+                    openEdit(drawerNote);
+                  }}
+                  className={drawerItemClass}
+                >
+                  ✏️ Editar
+                </button>
+                <button
+                  onClick={() => setFullscreenNote(drawerNote)}
+                  className={drawerItemClass}
+                >
+                  ⛶ Pantalla completa
+                </button>
+                <button
+                  onClick={() => handleTogglePin(drawerNote)}
+                  className={drawerItemClass}
+                >
+                  📌 {drawerNote.pinned ? "Desfijar" : "Fijar"}
+                </button>
+                <button
+                  onClick={() => handleToggleLock(drawerNote)}
+                  className={drawerItemClass}
+                >
+                  {drawerNote.locked ? "🔓 Desbloquear" : "🔒 Bloquear"}
+                </button>
+                <button
+                  onClick={() => handleToggleArchive(drawerNote)}
+                  className={drawerItemClass}
+                >
+                  {drawerNote.archived ? "📤 Restaurar" : "🗄️ Archivar"}
+                </button>
+                {!drawerNote.locked && (
+                  <button
+                    onClick={() => handleDelete(drawerNote)}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-red-500 transition hover:bg-red-500/10"
+                  >
+                    🗑️ Enviar a papelera
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Modal de nota con editor enriquecido */}
       {isModalOpen && (
@@ -939,7 +1173,7 @@ export function NotesPanel({ userId, isDarkMode }: NotesPanelProps) {
                 <label className="mb-2 block text-sm font-medium text-slate-300">
                   Color
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {noteColors.map((c) => (
                     <button
                       key={c}
