@@ -1,8 +1,8 @@
 // ============================================
-// BOOKMARK DPB - HIGHLIGHTER (Content Script)
+// BOOKMARK DPB - HIGHLIGHTER INTELIGENTE
 // ============================================
-// Muestra un toolbar flotante cuando el usuario
-// selecciona texto, permitiendo resaltar con colores.
+// Muestra el toolbar al seleccionar texto, pero
+// NO interfiere cuando el usuario quiere copiar.
 
 const HIGHLIGHT_COLORS = [
   { id: "yellow", label: "Amarillo", color: "#fef08a", textColor: "#854d0e" },
@@ -14,32 +14,28 @@ const HIGHLIGHT_COLORS = [
 
 let toolbar = null;
 let currentSelection = null;
+let pendingShowTimer = null;
 
 // Crear el toolbar flotante
 function createToolbar() {
   if (toolbar) return toolbar;
-
   toolbar = document.createElement("div");
   toolbar.id = "bdpb-highlight-toolbar";
   toolbar.style.display = "none";
 
-  // Botones de colores
   HIGHLIGHT_COLORS.forEach((colorOption) => {
     const btn = document.createElement("button");
     btn.className = "bdpb-color-btn";
     btn.style.backgroundColor = colorOption.color;
     btn.title = `Resaltar en ${colorOption.label}`;
     btn.dataset.color = colorOption.id;
-
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
       applyHighlight(colorOption.id);
     });
-
     toolbar.appendChild(btn);
   });
 
-  // Botón de nota
   const noteBtn = document.createElement("button");
   noteBtn.className = "bdpb-note-btn";
   noteBtn.innerHTML = "📝";
@@ -54,14 +50,12 @@ function createToolbar() {
   return toolbar;
 }
 
-// Mostrar el toolbar cerca de la selección
 function showToolbar(x, y) {
   const tb = createToolbar();
   tb.style.display = "flex";
   tb.style.left = `${x}px`;
   tb.style.top = `${y}px`;
 
-  // Ajustar si se sale de la pantalla
   requestAnimationFrame(() => {
     const rect = tb.getBoundingClientRect();
     if (rect.right > window.innerWidth) {
@@ -73,27 +67,32 @@ function showToolbar(x, y) {
   });
 }
 
-// Ocultar el toolbar
 function hideToolbar() {
   if (toolbar) {
     toolbar.style.display = "none";
   }
 }
 
+// Cancelar la aparición pendiente (modo inteligente)
+function cancelPendingToolbar() {
+  if (pendingShowTimer) {
+    clearTimeout(pendingShowTimer);
+    pendingShowTimer = null;
+  }
+  hideToolbar();
+}
+
 // Aplicar resaltado al texto seleccionado
 function applyHighlight(color) {
   if (!currentSelection) return;
-
   const selectedText = currentSelection.toString().trim();
   if (!selectedText) return;
 
-  // Aplicar el resaltado visual
   try {
     const range = currentSelection.getRangeAt(0);
     const span = document.createElement("span");
     span.className = "bdpb-highlight";
     span.dataset.bdpbColor = color;
-
     const colorMap = {
       yellow: "#fef08a",
       green: "#86efac",
@@ -101,34 +100,27 @@ function applyHighlight(color) {
       pink: "#f9a8d4",
       orange: "#fdba74",
     };
-
     span.style.backgroundColor = colorMap[color] || "#fef08a";
     span.style.padding = "1px 2px";
     span.style.borderRadius = "2px";
-
     range.surroundContents(span);
   } catch (e) {
     console.error("Error aplicando resaltado visual:", e);
   }
 
-  // Guardar en Supabase
   saveHighlight(selectedText, color, null);
-
-  // Limpiar selección y ocultar toolbar
   currentSelection = null;
-  hideToolbar();
+  cancelPendingToolbar();
 }
 
 // Mostrar prompt para nota
 function showNotePrompt() {
   if (!currentSelection) return;
-
   const selectedText = currentSelection.toString().trim();
   if (!selectedText) return;
 
   const note = prompt("Escribe una nota para este resaltado (opcional):");
 
-  // Aplicar resaltado visual (por defecto amarillo si hay nota)
   try {
     const range = currentSelection.getRangeAt(0);
     const span = document.createElement("span");
@@ -137,16 +129,14 @@ function showNotePrompt() {
     span.style.backgroundColor = "#fef08a";
     span.style.padding = "1px 2px";
     span.style.borderRadius = "2px";
-
     range.surroundContents(span);
   } catch (e) {
     console.error("Error aplicando resaltado visual:", e);
   }
 
   saveHighlight(selectedText, "yellow", note);
-
   currentSelection = null;
-  hideToolbar();
+  cancelPendingToolbar();
 }
 
 // Guardar highlight en Supabase
@@ -162,39 +152,75 @@ function saveHighlight(selectedText, color, note) {
   });
 }
 
+// ============================================
+// MODO INTELIGENTE: no estorbar al copiar
+// ============================================
+
+// Si el usuario COPIA o CORTA, cancelamos el toolbar
+document.addEventListener("copy", () => {
+  currentSelection = null;
+  cancelPendingToolbar();
+});
+
+document.addEventListener("cut", () => {
+  currentSelection = null;
+  cancelPendingToolbar();
+});
+
+// Si presiona Ctrl+C / Cmd+C, cancelamos el toolbar
+document.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c") {
+    currentSelection = null;
+    cancelPendingToolbar();
+  }
+});
+
 // Escuchar eventos de selección
 document.addEventListener("mouseup", (e) => {
-  // Ignorar clics dentro del toolbar
   if (toolbar && toolbar.contains(e.target)) return;
 
   setTimeout(() => {
     const selection = window.getSelection();
-
     if (selection && selection.toString().trim().length > 0) {
+      // No mostrar dentro de inputs, textareas o editables
+      try {
+        const node = selection.getRangeAt(0).startContainer;
+        const el = node.nodeType === 3 ? node.parentElement : node;
+        if (el && el.closest("input, textarea, select, [contenteditable='true']")) {
+          return;
+        }
+      } catch (err) {}
+
       currentSelection = selection;
       const range = selection.getRangeAt(0);
       const rect = range.getBoundingClientRect();
+      const x = rect.left + rect.width / 2 + window.scrollX;
+      const y = rect.bottom + window.scrollY + 10;
 
-      showToolbar(
-        rect.left + rect.width / 2 + window.scrollX,
-        rect.bottom + window.scrollY + 10
-      );
+      // Esperar 700ms: si el usuario copia en ese tiempo, NO aparece
+      if (pendingShowTimer) clearTimeout(pendingShowTimer);
+      pendingShowTimer = setTimeout(() => {
+        const still = window.getSelection();
+        if (still && still.toString().trim().length > 0 && currentSelection) {
+          showToolbar(x, y);
+        }
+        pendingShowTimer = null;
+      }, 700);
     } else {
-      hideToolbar();
+      cancelPendingToolbar();
     }
   }, 10);
 });
 
-// Ocultar toolbar al hacer scroll o clic en otro lugar
+// Ocultar al hacer clic en otro lugar
 document.addEventListener("mousedown", (e) => {
   if (toolbar && !toolbar.contains(e.target)) {
-    hideToolbar();
+    cancelPendingToolbar();
   }
 });
 
-// Limpiar al cargar la página
 window.addEventListener("load", () => {
-  hideToolbar();
+  cancelPendingToolbar();
 });
 
-console.log("🖍️ Bookmark DPB Highlighter cargado");
+console.log("🖍️ Bookmark DPB Highlighter inteligente cargado");
