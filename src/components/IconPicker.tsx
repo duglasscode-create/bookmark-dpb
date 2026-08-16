@@ -4,83 +4,256 @@ import { useState } from "react";
 import type { ComponentType } from "react";
 import * as LucideIcons from "lucide-react";
 
-// ============ REPOSITORIO 1: ICONOS UI (LUCIDE) ============
-// Array.from(new Set(...)) elimina duplicados automáticamente
+// ============ REPOSITORIO 1: ICONOS UI (LUCIDE) - 300+ ICONOS ============
 const LUCIDE_ICONS = Array.from(new Set([
-  "Folder", "FolderOpen", "FolderPlus", "FolderMinus", "FolderArchive",
-  "File", "FileText", "FileCode", "FileImage", "FileVideo", "FileAudio",
-  "FileSpreadsheet", "FileCheck", "FileX", "FileSearch",
-  "Star", "Heart", "Bookmark", "BookmarkCheck", "BookmarkPlus", "Flag",
-  "Tag", "Tags", "Link", "Link2", "Paperclip", "Pin",
-  "Globe", "Code", "Terminal", "Database", "Server", "Cloud", "Wifi",
-  "Github", "GitBranch", "GitCommit", "GitPullRequest", "Code2", "Bug",
-  "Cpu", "HardDrive", "Usb", "Bluetooth", "Smartphone", "Laptop", "Monitor",
-  "Briefcase", "Building2", "Building", "Landmark", "Warehouse", "Store",
-  "ShoppingCart", "ShoppingBag", "Receipt", "Wallet", "CreditCard", "Banknote",
-  "Coins", "TrendingUp", "TrendingDown", "BarChart", "BarChart2", "PieChart",
-  "LineChart", "Activity", "Target", "BadgeCheck", "Award", "Trophy", "Medal",
-  "Book", "BookOpen", "BookMarked", "Library", "GraduationCap", "School",
-  "PenTool", "Pencil", "Highlighter", "Underline", "Type", "Languages",
-  "Leaf", "Flower", "Flower2", "TreePine", "TreeDeciduous", "Mountain",
-  "Sun", "Moon", "CloudRain", "Snowflake", "Flame",
-  "Droplet", "Waves", "Umbrella", "Rainbow", "Wind",
-  "Apple", "Cherry", "Grape", "Banana", "Orange", "Pizza", "Coffee", "CupSoda",
-  "Utensils", "UtensilsCrossed", "Sandwich", "Cake", "Cookie", "IceCream",
-  "Beef", "Fish", "Croissant", "Soup",
-  "Plane", "Car", "Taxi", "Bus", "Train", "Ship", "Anchor", "Rocket",
-  "Bike", "Motorcycle", "Map", "MapPin", "Navigation", "Compass",
-  "Suitcase", "Luggage", "Ticket", "Milestone",
-  "User", "UserPlus", "Users", "UserCheck", "UserX", "HeartPulse",
-  "Stethoscope", "Syringe", "Pill", "Dumbbell", "Smile", "Frown", "Meh",
-  "Laugh", "Baby", "Accessibility",
-  "Wrench", "Hammer", "Screwdriver", "Scissors", "Ruler",
-  "Settings", "Sliders", "Filter", "Search", "ZoomIn", "ZoomOut",
-  "Lock", "LockOpen", "Key", "KeyRound", "Shield", "ShieldCheck", "ShieldAlert",
-  "Eye", "EyeOff", "Fingerprint", "Scan",
-  "Mail", "MailOpen", "Inbox", "Send", "MessageCircle", "MessageSquare",
-  "Phone", "PhoneCall", "PhoneIncoming", "PhoneOutgoing", "PhoneMissed",
-  "AtSign", "Bell", "BellRing", "Megaphone",
-  "Music", "Music2", "Headphones", "Radio", "Mic", "Volume2", "VolumeX",
-  "Play", "Pause", "SkipForward", "SkipBack", "Camera", "Video", "Film",
-  "Tv", "Clapperboard", "Gamepad2", "Joystick", "Dice5",
-  "CheckCircle", "CheckCircle2", "Check", "X", "XCircle", "AlertCircle",
-  "AlertTriangle", "Info", "HelpCircle", "Clock", "Timer",
-  "Calendar", "CalendarCheck", "CalendarX", "Hourglass",
-  "Circle", "Square", "Triangle", "Hexagon", "Pentagon", "Diamond",
-  "LayoutGrid", "LayoutList", "Columns", "Rows", "PanelLeft", "PanelRight",
-  "Maximize2", "Minimize2", "ExternalLink", "Copy", "Clipboard",
-  "Save", "Download", "Upload", "Trash2", "RefreshCw", "Power",
-  "Sparkles", "Crown", "Gem", "Gift", "PartyPopper",
-  "Zap", "Lightbulb", "Microscope", "FlaskConical", "Atom", "Telescope",
-  "Satellite", "Sword", "Scroll", "Feather", "Palette", "Brush",
-  "Puzzle", "Package", "Box", "Archive", "Truck",
+  // 📁 Archivos y carpetas
+  "Folder", "FolderOpen", "FolderPlus", "FolderMinus", "FolderArchive", "FolderClosed", "FolderDot",
+  "FolderInput", "FolderOutput", "FolderSearch", "FolderSync", "FolderTree",
+  "File", "FileText", "FileCode", "FileImage", "FileVideo", "FileAudio", "FileSpreadsheet",
+  "FileCheck", "FileX", "FileSearch", "FileArchive", "FileBox", "FileClock", "FileCode2",
+  "FileCog", "FileDiff", "FileDigit", "FileDown", "FileEdit", "FileHeart", "FileInput",
+  "FileJson", "FileKey", "FileLock", "FileMinus", "FileOutput", "FilePen", "FilePlus",
+  "FileQuestion", "FileScan", "FileSignature", "FileStack", "FileSymlink", "FileTerminal",
+  "FileType", "FileUp", "FileVolume", "FileWarning",
+
+  // ⭐ Favoritos y marcadores
+  "Star", "Heart", "Bookmark", "BookmarkCheck", "BookmarkPlus", "BookmarkMinus", "BookmarkX",
+  "Flag", "FlagOff", "FlagTriangleLeft", "FlagTriangleRight", "Pin", "PinOff",
+  "Tag", "Tags", "Link", "Link2", "Link2Off", "Paperclip", "PaperclipOff",
+
+  // 💻 Tecnología y desarrollo
+  "Globe", "Code", "Code2", "CodeXml", "Terminal", "TerminalSquare", "Database", "Server",
+  "Cloud", "CloudOff", "CloudDownload", "CloudUpload", "CloudRain", "CloudSnow", "CloudFog",
+  "Wifi", "WifiOff", "Bluetooth", "BluetoothOff", "BluetoothSearching", "BluetoothConnected",
+  "Github", "GitBranch", "GitBranchPlus", "GitCommit", "GitCommitHorizontal", "GitCommitVertical",
+  "GitCompare", "GitCompareArrows", "GitFork", "GitGraph", "GitMerge", "GitPullRequest",
+  "GitPullRequestArrow", "GitPullRequestClosed", "GitPullRequestDraft",
+  "Cpu", "HardDrive", "HardDriveDownload", "HardDriveUpload", "Usb", "Binary",
+  "Bug", "BugOff", "BugPlay",
+
+  // 📱 Dispositivos
+  "Smartphone", "SmartphoneNfc", "Laptop", "LaptopMinimal", "Monitor", "MonitorCheck",
+  "MonitorCog", "MonitorDot", "MonitorDown", "MonitorOff", "MonitorPause", "MonitorPlay",
+  "MonitorSmartphone", "MonitorSpeaker", "MonitorStop", "MonitorUp", "MonitorX",
+  "Tablet", "TabletSmartphone", "Watch", "Keyboard", "Mouse", "MousePointer",
+  "Printer", "PrinterCheck", "Scan", "ScanBarcode", "ScanEye", "ScanFace", "ScanLine",
+  "ScanSearch", "ScanText", "QrCode",
+
+  // 🏢 Negocios y finanzas
+  "Briefcase", "BriefcaseBusiness", "BriefcaseMedical",
+  "Building", "Building2", "Landmark", "Warehouse", "Store", "Factory", "House", "HousePlus",
+  "ShoppingCart", "ShoppingBag", "ShoppingBasket", "Receipt", "Wallet", "WalletCards",
+  "WalletMinimal", "CreditCard", "Banknote", "BanknoteArrowDown", "BanknoteArrowUp",
+  "Coins", "CoinsExchange", "CoinsStacked",
+  "TrendingUp", "TrendingDown", "BarChart", "BarChart2", "BarChart3", "BarChart4",
+  "BarChartBig", "BarChartHorizontal", "BarChartHorizontalBig",
+  "PieChart", "LineChart", "Activity", "Target", "BadgeCheck", "BadgePlus", "BadgeMinus",
+  "BadgeEuro", "BadgeDollarSign", "BadgePercent", "BadgeIndianRupee", "BadgeJapaneseYen",
+  "BadgePoundSterling", "BadgeRussianRuble", "BadgeSwissFranc",
+  "Award", "Trophy", "Medal", "Crown", "Gem",
+
+  // 📚 Educación y libros
+  "Book", "BookOpen", "BookOpenCheck", "BookOpenText", "BookMarked", "BookCopy", "BookDashed",
+  "BookDown", "BookHeart", "BookImage", "BookKey", "BookLock", "BookMinus", "BookPlus",
+  "BookText", "BookType", "BookUp", "BookUp2", "BookUser", "BookX",
+  "Library", "LibraryBig", "LibrarySquare", "GraduationCap", "School", "University",
+  "Backpack", "Notebook", "NotebookPen", "NotebookTabs", "NotebookText",
+
+  // ✏️ Escritura y edición
+  "PenTool", "Pencil", "PencilLine", "PencilOff", "PencilRuler",
+  "Highlighter", "Underline", "Strikethrough", "Type", "Types", "Languages",
+  "Text", "TextCursor", "TextCursorInput", "TextQuote", "TextSearch", "TextSelect",
+  "CaseLower", "CaseSensitive", "CaseUpper", "WholeWord",
+
+  // 🌿 Naturaleza y clima
+  "Leaf", "Flower", "Flower2", "TreePine", "TreeDeciduous", "TreePalm",
+  "Mountain", "MountainSnow", "MountainOff",
+  "Sun", "SunDim", "SunMedium", "SunMoon", "Sunrise", "Sunset", "Moon", "MoonStar",
+  "CloudRain", "CloudLightning", "CloudDrizzle", "CloudHail", "CloudMoon", "CloudMoonRain",
+  "CloudSun", "CloudSunRain",
+  "Snowflake", "Flame", "FlameKindling",
+  "Droplet", "Droplets", "Waves", "WavesLadder", "Umbrella", "Rainbow", "Wind", "WindArrowDown",
+  "Tornado", "Hurricane", "Thermometer", "ThermometerSnowflake", "ThermometerSun",
+  "Sprout", "Plant", "Cactus", "TreePine", "Trees",
+
+  // 🍽️ Comida y bebidas
+  "Apple", "Cherry", "Grape", "Banana", "Orange", "Lemon", "Strawberry", "Watermelon",
+  "Peach", "Pear", "Pineapple", "Kiwi", "Mango", "Coconut",
+  "Pizza", "Sandwich", "Hamburger", "Hotdog", "Taco", "Burrito", "Croissant", "Cookie",
+  "Cake", "CakeSlice", "IceCream", "IceCreamBowl", "IceCreamCone", "Candy", "CandyCane", "CandyOff",
+  "Beef", "Fish", "Bird", "BeefSlice", "Egg", "EggFried", "Soup", "Salad", "Noodles", "RiceBowl",
+  "Coffee", "CupSoda", "Milk", "MilkOff", "Wine", "WineOff", "Beer", "BeerOff",
+  "Tea", "Utensils", "UtensilsCrossed", "CookingPot", "ChefHat",
+
+  // 🚗 Viajes y transporte
+  "Plane", "PlaneTakeoff", "PlaneLanding", "Car", "CarTaxiFront", "CarFront", "Taxi",
+  "Bus", "BusFront", "Train", "TrainFront", "TrainTrack", "Ship", "ShipWheel",
+  "Anchor", "Rocket", "Satellite", "Bike", "Motorcycle", "Truck", "Tractor",
+  "Ambulance", "FireExtinguisher", "Fuel",
+  "Map", "MapPin", "MapPinOff", "MapPinned", "Navigation", "NavigationOff", "Compass",
+  "Suitcase", "SuitcaseRolling", "Luggage", "Ticket", "TicketCheck", "TicketMinus",
+  "TicketPlus", "TicketSlash", "TicketX", "Milestone", "Route", "RouteOff",
+
+  // 👥 Personas y emociones
+  "User", "UserPlus", "UserMinus", "UserCheck", "UserX", "UserCog", "UserRound",
+  "UserRoundCheck", "UserRoundCog", "UserRoundMinus", "UserRoundPlus", "UserRoundSearch",
+  "UserRoundX", "Users", "UsersRound",
+  "HeartPulse", "Stethoscope", "Syringe", "Pill", "PillBottle", "Dumbbell",
+  "Smile", "SmilePlus", "Frown", "Meh", "Laugh", "Grimace", "Angry",
+  "Baby", "Accessibility", "Hand", "Handshake", "HandHeart", "HandCoins", "HandHelping",
+  "HandMetal", "HandPlatter",
+  "Heart", "HeartCrack", "HeartHandshake", "HeartOff", "HeartPulse",
+  "ThumbsUp", "ThumbsDown", "Clap", "Wave", "Fingerprint", "ScanFingerprint",
+
+  // 🛠️ Herramientas y configuración
+  "Wrench", "Hammer", "Screwdriver", "Scissors", "Ruler", "RulerSquare", "RulerSquareCompass",
+  "Settings", "Settings2", "Sliders", "SlidersHorizontal", "SlidersVertical",
+  "Filter", "FilterX", "Search", "SearchCheck", "SearchCode", "SearchSlash", "SearchX",
+  "ZoomIn", "ZoomOut",
+  "Lock", "LockOpen", "LockKeyhole", "LockKeyholeOpen",
+  "Key", "KeyRound", "KeySquare",
+  "Shield", "ShieldCheck", "ShieldAlert", "ShieldBan", "ShieldClose", "ShieldEllipsis",
+  "ShieldHalf", "ShieldMinus", "ShieldOff", "ShieldPlus", "ShieldQuestion", "ShieldX",
+  "Eye", "EyeOff", "EyeClosed",
+
+  // 💬 Comunicación
+  "Mail", "MailCheck", "MailMinus", "MailOpen", "MailPlus", "MailQuestion", "MailSearch",
+  "MailWarning", "MailX",
+  "Inbox", "Send", "SendHorizontal", "SendToBack",
+  "MessageCircle", "MessageCircleCode", "MessageCircleDashed", "MessageCircleHeart",
+  "MessageCircleMore", "MessageCircleOff", "MessageCirclePlus", "MessageCircleQuestion",
+  "MessageCircleReply", "MessageCircleWarning", "MessageCircleX",
+  "MessageSquare", "MessageSquareCode", "MessageSquareDashed", "MessageSquareDiff",
+  "MessageSquareDot", "MessageSquareHeart", "MessageSquareLock", "MessageSquareMore",
+  "MessageSquareOff", "MessageSquarePlus", "MessageSquareQuote", "MessageSquareReply",
+  "MessageSquareShare", "MessageSquareText", "MessageSquareWarning", "MessageSquareX",
+  "Phone", "PhoneCall", "PhoneForwarded", "PhoneIncoming", "PhoneMissed", "PhoneOff",
+  "PhoneOutgoing", "AtSign", "Hash", "Mention",
+  "Bell", "BellDot", "BellElectric", "BellMinus", "BellOff", "BellPlus", "BellRing",
+  "Megaphone", "MegaphoneOff", "Speaker",
+
+  // 🎵 Multimedia y entretenimiento
+  "Music", "Music2", "Music3", "Music4", "Headphones", "Radio", "Mic", "MicOff",
+  "Volume", "Volume1", "Volume2", "VolumeX",
+  "Play", "Pause", "SkipForward", "SkipBack", "SquarePlay", "SquarePause",
+  "Camera", "CameraOff", "Video", "VideoOff", "Film", "Clapperboard",
+  "Tv", "TvMinimal", "TvMinimalPlay",
+  "Gamepad", "Gamepad2", "Joystick", "Dice1", "Dice2", "Dice3", "Dice4", "Dice5", "Dice6",
+
+  // ✅ Estados y alertas
+  "Check", "CheckCheck", "CircleCheck", "CircleCheckBig", "SquareCheck", "SquareCheckBig",
+  "X", "CircleX", "SquareX",
+  "AlertCircle", "AlertTriangle", "AlertOctagon", "Info", "HelpCircle",
+  "Clock", "Clock1", "Clock2", "Clock3", "Clock4", "Clock5", "Clock6", "Clock7", "Clock8",
+  "Clock9", "Clock10", "Clock11", "Clock12", "Timer", "TimerOff", "TimerReset",
+  "AlarmClock", "AlarmClockCheck", "AlarmClockMinus", "AlarmClockOff", "AlarmClockPlus",
+  "Calendar", "CalendarCheck", "CalendarCheck2", "CalendarClock", "CalendarCog",
+  "CalendarDays", "CalendarDot", "CalendarFold", "CalendarHeart", "CalendarMinus",
+  "CalendarMinus2", "CalendarOff", "CalendarPlus", "CalendarPlus2", "CalendarRange",
+  "CalendarSearch", "CalendarX", "CalendarX2",
+  "Hourglass", "Watch", "Stopwatch",
+
+  // 🔷 Formas y diseño
+  "Circle", "CircleDot", "CircleDashed", "CircleEqual", "CircleOff", "CircleSlashed",
+  "Square", "SquareDashed", "SquareDot", "SquareEqual",
+  "Triangle", "TriangleRight", "Diamond", "Pentagon", "Hexagon", "Octagon",
+  "Star", "StarHalf", "StarOff",
+  "LayoutGrid", "LayoutList", "LayoutDashboard", "LayoutPanelLeft", "LayoutPanelRight",
+  "LayoutPanelTop", "Columns", "Columns2", "Columns3", "Columns4",
+  "Rows", "Rows2", "Rows3", "Rows4",
+  "PanelLeft", "PanelRight", "PanelTop", "PanelBottom", "PanelLeftClose", "PanelRightClose",
+  "Maximize", "Maximize2", "Minimize", "Minimize2",
+  "ExternalLink", "Copy", "Clipboard", "ClipboardCheck", "ClipboardCopy", "ClipboardList",
+  "ClipboardMinus", "ClipboardPaste", "ClipboardPen", "ClipboardPlus", "ClipboardType", "ClipboardX",
+  "Save", "SaveAll", "SaveOff",
+  "Download", "Upload", "Trash", "Trash2", "RefreshCw", "RefreshCcw", "Power", "PowerOff",
+
+  // ✨ Especiales y divertidos
+  "Sparkles", "Crown", "Gem", "Gift", "PartyPopper", "Confetti", "Firework",
+  "Zap", "ZapOff", "Lightbulb", "LightbulbOff",
+  "Microscope", "FlaskConical", "FlaskRound", "Atom", "Telescope", "Satellite",
+  "Sword", "Swords", "Scroll", "ScrollText", "Feather", "Palette", "Brush", "Paintbrush",
+  "PaintbrushVertical", "PaintRoller", "PaintBucket", "SprayCan",
+  "Puzzle", "PuzzlePiece", "Package", "PackageCheck", "PackageMinus", "PackageOpen",
+  "PackagePlus", "PackageSearch", "PackageX", "Box", "BoxSelect",
+  "Archive", "ArchiveRestore", "ArchiveX", "Truck", "Container",
+
+  // 🤖 IA y tecnología moderna
+  "Bot", "BotMessageSquare", "BotOff", "Brain", "BrainCircuit", "BrainCog",
+  "Wand", "WandSparkles", "Sparkle", "CircuitBoard", "Workflow",
+  "Network", "NetworkSlash", "Webhook", "WebhookOff",
+  "Orbit", "Orbiting", "SatelliteDish", "Radar", "Radio",
+  "Scan", "ScanBarcode", "ScanEye", "ScanFace", "ScanLine", "ScanSearch", "ScanText",
+
+  // 🏗️ Arquitectura y construcción
+  "House", "HousePlug", "HouseWifi", "Home", "Building", "Building2", "Factory",
+  "Hospital", "School", "University", "Church", "Castle", "Tent", "TentTree",
+  "DoorOpen", "DoorClosed", "Fence", "Wall", "Braces", "Brackets",
+  "Hammer", "HardHat", "Construction", "TapeMeasure", "Level", "Trowel",
+
+  // 🐾 Animales
+  "Dog", "Cat", "Fish", "Bird", "Rabbit", "Turtle", "Bug", "BugOff", "BugPlay",
+  "Beef", "FishSymbol", "Shrimp", "Squid", "Whale", "Dolphin", "Shark", "Octopus",
+  "Cow", "Pig", "Sheep", "Horse", "Rabbit", "Squirrel", "Fox", "Bear", "Panda",
+  "Koala", "Crocodile", "Snake", "Frog", "Bat", "Owl", "Eagle", "Parrot", "Flamingo",
+  "Penguin", "Seal", "Otter", "Whale", "Duck", "Chicken", "Rooster", "Turkey",
+
+  // 📱 Redes sociales (genéricos)
+  "Twitter", "Facebook", "Instagram", "Linkedin", "Youtube", "Twitch", "Discord",
+  "Slack", "Tiktok", "Snapchat", "Pinterest", "Reddit", "Tumblr", "Vimeo", "Dribbble",
+
+  // 🔧 Más herramientas y acciones
+  "Plus", "Minus", "PlusCircle", "MinusCircle", "PlusSquare", "MinusSquare",
+  "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight",
+  "ArrowUpCircle", "ArrowDownCircle", "ArrowLeftCircle", "ArrowRightCircle",
+  "ChevronUp", "ChevronDown", "ChevronLeft", "ChevronRight",
+  "ChevronsUp", "ChevronsDown", "ChevronsLeft", "ChevronsRight",
+  "CornerUpLeft", "CornerUpRight", "CornerDownLeft", "CornerDownRight",
+  "Undo", "Redo", "Undo2", "Redo2", "RotateCw", "RotateCcw",
+  "Expand", "Shrink", "Move", "MoveHorizontal", "MoveVertical", "MoveDiagonal",
+  "Grab", "GrabHorizontal", "GrabVertical",
+  "MousePointer", "MousePointer2", "MousePointerClick", "MousePointerSquare", "Mouse",
+
+  // 💡 Símbolos diversos
+  "Percent", "Ampersand", "AtSign", "Hash", "Copyright", "Trademark", "Registered",
+  "Infinity", "Divide", "Equal", "NotEqual", "Sigma", "Pi", "Omega", "Delta",
+  "SquarePi", "SquareSigma", "SquareSqrt", "SquareRadical",
+  "Copyright", "CreativeCommons", "CreativeCommonsZero",
+  "Asterisk", "AtSign", "Hash", "NumberSign",
+  "Currency", "DollarSign", "Euro", "PoundSterling", "Yen", "Rupee", "Franc", "Ruble", "Bitcoin",
 ]));
 
 // ============ REPOSITORIO 2: EMOJIS ============
 const EMOJIS = Array.from(new Set([
-  "📁", "", "🗂️", "📄", "📑", "", "", "📝", "✏️", "🖊️", "🖍️", "📎", "📐", "", "✂️",
-  "💻", "🖥️", "⌨️", "🖱️", "🖨️", "📱", "", "🔌", "🔋", "💾", "💿", "📀", "📷", "", "",
-  "", "🔗", "🌍", "🌎", "", "🗺️", "🧭", "", "📶", "🔒", "🔓", "", "️",
+  "📁", "📂", "🗂️", "📄", "📑", "📃", "📋", "📝", "✏️", "🖊️", "🖍️", "📎", "📐", "📏", "✂️",
+  "💻", "🖥️", "⌨️", "🖱️", "🖨️", "📱", "☎️", "🔌", "🔋", "💾", "💿", "📀", "📷", "📸", "📹",
+  "🎥", "🔗", "🌍", "🌎", "🌏", "🗺️", "🧭", "📍", "📶", "🔒", "🔓", "🔑", "🗝️",
   "💰", "💵", "💴", "💶", "💷", "🪙", "💳", "🧾", "📈", "📉", "💹", "🏦",
-  "💼", "🏢", "", "🏭", "🏗️", "📊",
-  "📚", "", "📕", "📗", "📘", "📙", "", "",
-  "", "🖌️", "🎭", "🎬", "", "🎧", "🎵", "🎶",
-  "🌸", "🌺", "", "", "🌷", "🌼", "🌱", "", "", "🌴", "🌵", "🍃", "🍂", "",
-  "", "🍊", "🍋", "", "", "🍇", "🍓", "", "", "🍑", "🥭", "", "",
-  "🍅", "🍆", "", "", "🥕", "🌽", "", "", "🍟", "🌭", "", "", "🍰", "",
-  "☕", "🧋", "", "", "🍺", "🍷", "", "",
-  "😀", "😃", "😄", "😁", "😆", "😊", "😍", "🥰", "😎", "🤓", "🧐", "", "", "😇",
-  "❤️", "🧡", "", "💚", "", "💜", "", "", "💔", "️", "💕", "💞", "💓", "💗",
-  "👍", "👎", "", "✌️", "🤞", "🤟", "", "", "👋", "🙏", "", "", "✍️",
-  "⭐", "🌟", "✨", "💫", "🔥", "💥", "⚡", "", "☀️", "🌙", "🌤️", "⛅", "️",
-  "️", "️", "🌨️", "❄️", "☃️", "🌊", "🌫️", "🌬️",
-  "⚽", "", "", "⚾", "🥎", "", "", "🏉", "🎱", "", "", "🥊", "🥋", "⛳",
-  "🔧", "🔨", "⚒️", "🛠️", "⛏️", "🔩", "⚙️", "🧱", "⛓️", "🧲", "🔬", "",
-  "✅", "❌", "", "", "", "⚠️", "🚸", "♻️", "🔰",
-  "🚗", "🚕", "", "🚌", "🚎", "️", "", "", "🚒", "🚐", "", "", "🚛",
-  "✈️", "🛫", "🛬", "", "", "🚁", "🚂", "", "", "🚊", "🚢", "",
-  "🏠", "🏡", "️", "️", "️", "", "", "🗽", "⛩️", "🕌", "⛪",
-  "🔖", "", "", "🗓️", "🗒️", "📔", "📒", "📓",
+  "💼", "🏢", "🏬", "🏭", "🏗️", "📊", "📉", "📊",
+  "📚", "📖", "📕", "📗", "📘", "📙", "📓", "📒",
+  "🎨", "🖌️", "🎭", "🎬", "🎤", "🎧", "🎵", "🎶",
+  "🌸", "🌺", "🌻", "🌹", "🌷", "🌼", "🌱", "🌲", "🌳", "🌴", "🌵", "🍃", "🍂", "🍁",
+  "🍎", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🫐", "🍈", "🍑", "🥭", "🍍", "🥥",
+  "🍅", "🍆", "🥑", "🥦", "🥕", "🌽", "🥔", "🍠", "🍟", "🌭", "🍔", "🍕", "🍰", "🎂",
+  "☕", "🧋", "🍵", "🥤", "🍺", "🍷", "🥂", "🍸",
+  "😀", "😃", "😄", "😁", "😆", "😊", "😍", "🥰", "😎", "🤓", "🧐", "🤔", "😐", "😇",
+  "❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "💔", "❣️", "💕", "💞", "💓", "💗",
+  "👍", "👎", "👊", "✌️", "🤞", "🤟", "🤘", "👌", "👋", "🙏", "💪", "🤝", "✍️",
+  "⭐", "🌟", "✨", "💫", "🔥", "💥", "⚡", "☄️", "☀️", "🌙", "🌤️", "⛅", "☁️",
+  "❄️", "☃️", "🌊", "🌫️", "🌬️",
+  "⚽", "🏀", "🏈", "⚾", "🥎", "🎾", "🏐", "🏉", "🎱", "🏓", "🏸", "🥊", "🥋", "⛳",
+  "🔧", "🔨", "⚒️", "🛠️", "⛏️", "🔩", "⚙️", "🧱", "⛓️", "🧲", "🔬", "🔭",
+  "✅", "❌", "⭕", "❗", "❓", "⚠️", "🚸", "♻️", "🔰",
+  "🚗", "🚕", "🚙", "🚌", "🚎", "🏎️", "🚓", "🚑", "🚒", "🚐", "🛻", "🚚", "🚛",
+  "✈️", "🛫", "🛬", "🛩️", "🚀", "🚁", "🚂", "🚆", "🚇", "🚊", "🚢", "⛵",
+  "🏠", "🏡", "🏘️", "🏚️", "🏛️", "🏰", "🗽", "⛩️", "🕌", "⛪",
+  "🔖", "🏷️", "🔗", "🗓️", "🗒️", "📔", "📒", "📓",
+  "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨", "🐯", "🦁", "🐮",
+  "🐷", "🐸", "🐵", "🐔", "🐧", "🐦", "🦆", "🦅", "🦉", "🦇", "🐺", "🐗",
+  "🐴", "🦄", "🐝", "🪱", "🐛", "🦋", "🐌", "🐞",
+  "🤖", "👾", "🎮", "🕹️", "🎲", "♟️", "🎯", "🎳",
+  "💎", "💍", "👑", "🎁", "🎀", "🎈", "🎉", "🎊",
+  "🧠", "💡", "🔍", "🔎", "🔬", "🔭", "📡", "⚛️",
 ]));
 
 // ============ COMPONENTE PARA MOSTRAR UN ICONO GUARDADO ============
@@ -114,7 +287,7 @@ export function IconDisplay({
   );
 }
 
-// ============ SELECTOR DE ICONOS (2 REPOSITORIOS) ============
+// ============ SELECTOR DE ICONOS (2 REPOSITORIOS, 300+ ICONOS UI) ============
 type IconPickerProps = {
   value: string | null;
   onChange: (icon: string) => void;
@@ -125,9 +298,13 @@ export function IconPicker({ value, onChange, isDarkMode }: IconPickerProps) {
   const [tab, setTab] = useState<"emoji" | "ui">("emoji");
   const [search, setSearch] = useState("");
 
+  const q = search.trim().toLowerCase();
   const filteredLucide = LUCIDE_ICONS.filter((name) =>
-    name.toLowerCase().includes(search.toLowerCase())
+    name.toLowerCase().includes(q)
   );
+  const filteredEmojis = q
+    ? EMOJIS.filter((e) => e.includes(q))
+    : EMOJIS;
 
   return (
     <div
@@ -156,6 +333,11 @@ export function IconPicker({ value, onChange, isDarkMode }: IconPickerProps) {
               <span className={`text-xs ${isDarkMode ? "text-slate-500" : "text-slate-400"}`}>—</span>
             )}
           </span>
+          <span
+            className={`text-xs ${isDarkMode ? "text-slate-500" : "text-slate-400"}`}
+          >
+            {tab === "ui" ? `${filteredLucide.length} iconos` : `${filteredEmojis.length} emojis`}
+          </span>
         </div>
         {value && (
           <button
@@ -174,7 +356,10 @@ export function IconPicker({ value, onChange, isDarkMode }: IconPickerProps) {
       <div className="mb-2 flex gap-2">
         <button
           type="button"
-          onClick={() => setTab("emoji")}
+          onClick={() => {
+            setTab("emoji");
+            setSearch("");
+          }}
           className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition ${
             tab === "emoji"
               ? "bg-blue-600 text-white"
@@ -187,7 +372,10 @@ export function IconPicker({ value, onChange, isDarkMode }: IconPickerProps) {
         </button>
         <button
           type="button"
-          onClick={() => setTab("ui")}
+          onClick={() => {
+            setTab("ui");
+            setSearch("");
+          }}
           className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition ${
             tab === "ui"
               ? "bg-blue-600 text-white"
@@ -200,25 +388,27 @@ export function IconPicker({ value, onChange, isDarkMode }: IconPickerProps) {
         </button>
       </div>
 
-      {/* Buscador (solo iconos UI) */}
-      {tab === "ui" && (
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar: github, star, rocket..."
-          className={`mb-2 w-full rounded-lg border px-3 py-1.5 text-sm outline-none ${
-            isDarkMode
-              ? "border-slate-600 bg-slate-700 text-white placeholder-slate-400"
-              : "border-slate-300 bg-white text-slate-900 placeholder-slate-400"
-          }`}
-        />
-      )}
+      {/* Buscador */}
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder={
+          tab === "ui"
+            ? "Buscar: github, star, rocket, bot..."
+            : "Buscar emoji (ej: fire, cat, pizza)"
+        }
+        className={`mb-2 w-full rounded-lg border px-3 py-1.5 text-sm outline-none ${
+          isDarkMode
+            ? "border-slate-600 bg-slate-700 text-white placeholder-slate-400"
+            : "border-slate-300 bg-white text-slate-900 placeholder-slate-400"
+        }`}
+      />
 
       {/* Cuadrícula de iconos */}
-      <div className="grid max-h-48 grid-cols-8 gap-1 overflow-y-auto">
+      <div className="grid max-h-64 grid-cols-9 gap-1 overflow-y-auto">
         {tab === "emoji"
-          ? EMOJIS.map((emoji) => (
+          ? filteredEmojis.map((emoji) => (
               <button
                 type="button"
                 key={emoji}
