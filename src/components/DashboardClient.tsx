@@ -24,7 +24,7 @@ import { TagsManagerModal } from "./TagsManagerModal";
 import { ViewSwitcher, type ViewMode } from "./ViewSwitcher";
 import { SettingsMenu } from "./SettingsMenu";
 import { HelpMenu } from "./HelpMenu";
-import { FloatingActions } from "./FloatingActions";
+import { BookmarkPlus, FolderPlus, StickyNote } from "lucide-react";
 import { IconDisplay } from "./IconPicker";
 import { logActivity } from "@/utils/activityLog";
 
@@ -707,11 +707,38 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
 
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center gap-2 rounded-xl bg-blue-600 px-3 md:px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
-              title="Agregar marcador (N)"
+              className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
+                isDarkMode
+                  ? "border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white"
+                  : "border-slate-300 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+              title="Nuevo marcador (N)"
             >
-              <span className="text-lg leading-none">+</span>
-              <span className="hidden sm:inline">Nuevo</span>
+              <BookmarkPlus size={16} />
+            </button>
+
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
+                isDarkMode
+                  ? "border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white"
+                  : "border-slate-300 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+              title="Nueva colección"
+            >
+              <FolderPlus size={16} />
+            </button>
+
+            <button
+              onClick={() => setActiveFilter("notes")}
+              className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
+                isDarkMode
+                  ? "border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white"
+                  : "border-slate-300 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+              title="Notas (9)"
+            >
+              <StickyNote size={16} />
             </button>
 
             <HelpMenu isDarkMode={isDarkMode} onOpenShortcuts={() => setIsShortcutsHelpOpen(true)} />
@@ -736,12 +763,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{renderContent()}</main>
       </div>
 
-      <FloatingActions
-        isDarkMode={isDarkMode}
-        onAddBookmark={() => setIsAddModalOpen(true)}
-        onNewCollection={() => setIsModalOpen(true)}
-        onGoNotes={() => setActiveFilter("notes")}
-      />
+
 
       <CollectionModal
         isOpen={isModalOpen}
