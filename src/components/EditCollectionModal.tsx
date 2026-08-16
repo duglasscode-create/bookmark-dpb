@@ -95,7 +95,7 @@ export function EditCollectionModal({
       ></div>
 
       <div
-        className={`relative w-full max-w-md rounded-2xl border p-6 shadow-2xl ${
+        className={`relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border p-6 shadow-2xl ${
           isDarkMode
             ? "border-slate-700 bg-slate-900"
             : "border-slate-300 bg-white"

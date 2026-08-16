@@ -4,116 +4,84 @@ import { useState } from "react";
 import type { ComponentType } from "react";
 import * as LucideIcons from "lucide-react";
 
-// ============ REPOSITORIO 1: ICONOS UI (LUCIDE - 200+) ============
-const LUCIDE_ICONS = [
-  // Básicos
+// ============ REPOSITORIO 1: ICONOS UI (LUCIDE) ============
+// Array.from(new Set(...)) elimina duplicados automáticamente
+const LUCIDE_ICONS = Array.from(new Set([
   "Folder", "FolderOpen", "FolderPlus", "FolderMinus", "FolderArchive",
   "File", "FileText", "FileCode", "FileImage", "FileVideo", "FileAudio",
   "FileSpreadsheet", "FileCheck", "FileX", "FileSearch",
-  // Acciones
   "Star", "Heart", "Bookmark", "BookmarkCheck", "BookmarkPlus", "Flag",
-  "Tag", "Tags", "Link", "Link2", "Paperclip", "Pin", "PaperPlane",
-  // Tech / Código
+  "Tag", "Tags", "Link", "Link2", "Paperclip", "Pin",
   "Globe", "Code", "Terminal", "Database", "Server", "Cloud", "Wifi",
   "Github", "GitBranch", "GitCommit", "GitPullRequest", "Code2", "Bug",
   "Cpu", "HardDrive", "Usb", "Bluetooth", "Smartphone", "Laptop", "Monitor",
-  // Negocios
   "Briefcase", "Building2", "Building", "Landmark", "Warehouse", "Store",
   "ShoppingCart", "ShoppingBag", "Receipt", "Wallet", "CreditCard", "Banknote",
   "Coins", "TrendingUp", "TrendingDown", "BarChart", "BarChart2", "PieChart",
   "LineChart", "Activity", "Target", "BadgeCheck", "Award", "Trophy", "Medal",
-  // Educación / Libros
   "Book", "BookOpen", "BookMarked", "Library", "GraduationCap", "School",
   "PenTool", "Pencil", "Highlighter", "Underline", "Type", "Languages",
-  // Naturaleza
   "Leaf", "Flower", "Flower2", "TreePine", "TreeDeciduous", "Mountain",
-  "Sun", "Moon", "Star", "Cloud", "CloudRain", "Snowflake", "Flame",
+  "Sun", "Moon", "CloudRain", "Snowflake", "Flame",
   "Droplet", "Waves", "Umbrella", "Rainbow", "Wind",
-  // Comida
   "Apple", "Cherry", "Grape", "Banana", "Orange", "Pizza", "Coffee", "CupSoda",
   "Utensils", "UtensilsCrossed", "Sandwich", "Cake", "Cookie", "IceCream",
-  "Beef", "Fish", "Croissant", "Soup", "Pizza",
-  // Transporte / Viajes
+  "Beef", "Fish", "Croissant", "Soup",
   "Plane", "Car", "Taxi", "Bus", "Train", "Ship", "Anchor", "Rocket",
   "Bike", "Motorcycle", "Map", "MapPin", "Navigation", "Compass",
   "Suitcase", "Luggage", "Ticket", "Milestone",
-  // Personas / Salud
   "User", "UserPlus", "Users", "UserCheck", "UserX", "HeartPulse",
   "Stethoscope", "Syringe", "Pill", "Dumbbell", "Smile", "Frown", "Meh",
   "Laugh", "Baby", "Accessibility",
-  // Herramientas
-  "Wrench", "Hammer", "Screwdriver", "Scissors", "Ruler", "Compass",
+  "Wrench", "Hammer", "Screwdriver", "Scissors", "Ruler",
   "Settings", "Sliders", "Filter", "Search", "ZoomIn", "ZoomOut",
-  // Seguridad
   "Lock", "LockOpen", "Key", "KeyRound", "Shield", "ShieldCheck", "ShieldAlert",
   "Eye", "EyeOff", "Fingerprint", "Scan",
-  // Comunicación
   "Mail", "MailOpen", "Inbox", "Send", "MessageCircle", "MessageSquare",
   "Phone", "PhoneCall", "PhoneIncoming", "PhoneOutgoing", "PhoneMissed",
   "AtSign", "Bell", "BellRing", "Megaphone",
-  // Media / Entretenimiento
   "Music", "Music2", "Headphones", "Radio", "Mic", "Volume2", "VolumeX",
   "Play", "Pause", "SkipForward", "SkipBack", "Camera", "Video", "Film",
   "Tv", "Clapperboard", "Gamepad2", "Joystick", "Dice5",
-  // Estado / Información
   "CheckCircle", "CheckCircle2", "Check", "X", "XCircle", "AlertCircle",
-  "AlertTriangle", "Info", "HelpCircle", "QuestionMark", "Clock", "Timer",
+  "AlertTriangle", "Info", "HelpCircle", "Clock", "Timer",
   "Calendar", "CalendarCheck", "CalendarX", "Hourglass",
-  // Formas / UI
   "Circle", "Square", "Triangle", "Hexagon", "Pentagon", "Diamond",
   "LayoutGrid", "LayoutList", "Columns", "Rows", "PanelLeft", "PanelRight",
-  "Sidebar", "Maximize2", "Minimize2", "ExternalLink", "Copy", "Clipboard",
+  "Maximize2", "Minimize2", "ExternalLink", "Copy", "Clipboard",
   "Save", "Download", "Upload", "Trash2", "RefreshCw", "Power",
-  // Misceláneo
-  "Sparkles", "Magic", "Crown", "Gem", "Gift", "PartyPopper", "Confetti",
-  "Balloon", "Zap", "Lightbulb", "Flame", "Snowflake", "Droplet",
-  "Microscope", "FlaskConical", "Atom", "Telescope", "Satellite",
-  "Sword", "Shield", "Scroll", "Feather", "Palette", "Brush",
-  "Puzzle", "Package", "Box", "Archive", "Inbox", "Truck", "Ship",
-];
+  "Sparkles", "Crown", "Gem", "Gift", "PartyPopper",
+  "Zap", "Lightbulb", "Microscope", "FlaskConical", "Atom", "Telescope",
+  "Satellite", "Sword", "Scroll", "Feather", "Palette", "Brush",
+  "Puzzle", "Package", "Box", "Archive", "Truck",
+]));
 
-// ============ REPOSITORIO 2: EMOJIS (120+) ============
-const EMOJIS = [
-  // Documentos
-  "📁", "📂", "📄", "📑", "📃", "📋", "📝", "✏️", "🖊️", "🖍️", "📎", "📐", "📏", "✂️",
-  // Tech
-  "💻", "🖥️", "⌨️", "🖱️", "🖨️", "📱", "📲", "🔌", "🔋", "💾", "💿", "📀", "📷", "📸", "📹",
-  // Web / Internet
-  "🌐", "🔗", "🌍", "🌎", "🌏", "🗺️", "🧭", "📡", "📶", "🔒", "🔓", "🔑", "🗝️",
-  // Finanzas
+// ============ REPOSITORIO 2: EMOJIS ============
+const EMOJIS = Array.from(new Set([
+  "📁", "", "🗂️", "📄", "📑", "", "", "📝", "✏️", "🖊️", "🖍️", "📎", "📐", "", "✂️",
+  "💻", "🖥️", "⌨️", "🖱️", "🖨️", "📱", "", "🔌", "🔋", "💾", "💿", "📀", "📷", "", "",
+  "", "🔗", "🌍", "🌎", "", "🗺️", "🧭", "", "📶", "🔒", "🔓", "", "️",
   "💰", "💵", "💴", "💶", "💷", "🪙", "💳", "🧾", "📈", "📉", "💹", "🏦",
-  // Trabajo
-  "💼", "🏢", "🏬", "🏭", "🏗️", "📊", "📉", "📋", "🗂️", "📁",
-  // Educación
-  "📚", "📖", "📕", "📗", "📘", "📙", "🎓", "👨‍🎓", "👩‍🎓", "🧠", "📝", "✏️",
-  // Arte / Diseño
-  "🎨", "🖌️", "🖍️", "✏️", "📐", "📏", "🎭", "🎬", "🎤", "🎧", "🎵", "🎶",
-  // Naturaleza
-  "🌸", "🌺", "🌻", "🌹", "🌷", "🌼", "🌱", "🌲", "🌳", "🌴", "🌵", "🍃", "🍂", "🍁",
-  // Comida
-  "🍎", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🫐", "🍒", "🍑", "🥭", "🍍", "🥝",
-  "🍅", "🍆", "🥑", "🥦", "🥕", "🌽", "🍕", "🍔", "🍟", "🌭", "🍿", "🧁", "🍰", "🎂",
-  "☕", "🧋", "🥤", "🍵", "🍺", "🍷", "🥂", "🍾",
-  // Emociones
-  "😀", "😃", "😄", "😁", "😆", "😊", "😍", "🥰", "😎", "🤓", "🧐", "🤔", "🤩", "😇",
-  "❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "💔", "❣️", "💕", "💞", "💓", "💗",
-  // Gestos
-  "👍", "👎", "👌", "✌️", "🤞", "🤟", "🤘", "🤙", "👋", "🙏", "👏", "🤝", "✍️",
-  // Objetos
-  "⭐", "🌟", "✨", "💫", "🔥", "💥", "⚡", "🌈", "☀️", "🌙", "⭐", "🌤️", "⛅", "☁️",
-  "🌧️", "⛈️", "🌨️", "❄️", "☃️", "🌊", "🌫️", "🌬️",
-  // Deportes
-  "⚽", "🏀", "🏈", "⚾", "🥎", "🎾", "🏐", "🏉", "🎱", "🏓", "🏸", "🥊", "🥋", "⛳",
-  // Herramientas
-  "🔧", "🔨", "⚒️", "🛠️", "⛏️", "🔩", "⚙️", "🧱", "⛓️", "🧲", "🔬", "🔭", "📡",
-  // Símbolos
-  "✅", "❌", "⭕", "🚫", "💯", "⚠️", "🚸", "♻️", "🔰", "☢️", "☣️", "⬆️", "⬇️", "➡️", "⬅️",
-  // Transporte
-  "🚗", "🚕", "🚙", "🚌", "🚎", "🏎️", "🚓", "🚑", "🚒", "🚐", "🛻", "🚚", "🚛",
-  "✈️", "🛫", "🛬", "🚀", "🛸", "🚁", "🚂", "🚆", "🚇", "🚊", "🚢", "⛵",
-  // Banderas / Lugares
-  "🏠", "🏡", "🏘️", "🏚️", "🏛️", "🏰", "🗼", "🗽", "⛩️", "🕌", "⛪", "🛕",
-];
+  "💼", "🏢", "", "🏭", "🏗️", "📊",
+  "📚", "", "📕", "📗", "📘", "📙", "", "",
+  "", "🖌️", "🎭", "🎬", "", "🎧", "🎵", "🎶",
+  "🌸", "🌺", "", "", "🌷", "🌼", "🌱", "", "", "🌴", "🌵", "🍃", "🍂", "",
+  "", "🍊", "🍋", "", "", "🍇", "🍓", "", "", "🍑", "🥭", "", "",
+  "🍅", "🍆", "", "", "🥕", "🌽", "", "", "🍟", "🌭", "", "", "🍰", "",
+  "☕", "🧋", "", "", "🍺", "🍷", "", "",
+  "😀", "😃", "😄", "😁", "😆", "😊", "😍", "🥰", "😎", "🤓", "🧐", "", "", "😇",
+  "❤️", "🧡", "", "💚", "", "💜", "", "", "💔", "️", "💕", "💞", "💓", "💗",
+  "👍", "👎", "", "✌️", "🤞", "🤟", "", "", "👋", "🙏", "", "", "✍️",
+  "⭐", "🌟", "✨", "💫", "🔥", "💥", "⚡", "", "☀️", "🌙", "🌤️", "⛅", "️",
+  "️", "️", "🌨️", "❄️", "☃️", "🌊", "🌫️", "🌬️",
+  "⚽", "", "", "⚾", "🥎", "", "", "🏉", "🎱", "", "", "🥊", "🥋", "⛳",
+  "🔧", "🔨", "⚒️", "🛠️", "⛏️", "🔩", "⚙️", "🧱", "⛓️", "🧲", "🔬", "",
+  "✅", "❌", "", "", "", "⚠️", "🚸", "♻️", "🔰",
+  "🚗", "🚕", "", "🚌", "🚎", "️", "", "", "🚒", "🚐", "", "", "🚛",
+  "✈️", "🛫", "🛬", "", "", "🚁", "🚂", "", "", "🚊", "🚢", "",
+  "🏠", "🏡", "️", "️", "️", "", "", "🗽", "⛩️", "🕌", "⛪",
+  "🔖", "", "", "🗓️", "🗒️", "📔", "📒", "📓",
+]));
 
 // ============ COMPONENTE PARA MOSTRAR UN ICONO GUARDADO ============
 export function IconDisplay({

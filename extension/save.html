@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Guardar en Bookmark DPB</title>
+  <script src="theme.js"></script>
   <style>
     * {
       margin: 0;
@@ -11,10 +12,38 @@
       box-sizing: border-box;
     }
 
+    /* ====== TEMA OSCURO (por defecto) ====== */
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --border-hover: #475569;
+      --text: #e2e8f0;
+      --text-strong: #ffffff;
+      --text-muted: #94a3b8;
+      --text-subtle: #64748b;
+      --text-faint: #475569;
+      --hover: #263449;
+    }
+
+    /* ====== TEMA CLARO ====== */
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --border-hover: #cbd5e1;
+      --text: #334155;
+      --text-strong: #0f172a;
+      --text-muted: #64748b;
+      --text-subtle: #64748b;
+      --text-faint: #94a3b8;
+      --hover: #f1f5f9;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #0f172a;
-      color: #e2e8f0;
+      background-color: var(--bg);
+      color: var(--text);
       width: 100%;
       min-height: 100vh;
       overflow-x: hidden;
@@ -42,11 +71,10 @@
     .header h1 {
       font-size: 16px;
       font-weight: 700;
-      color: #ffffff;
+      color: var(--text-strong);
       flex: 1;
     }
 
-    /* NUEVO: Botón de configuración */
     .settings-btn {
       background: transparent;
       border: none;
@@ -59,14 +87,14 @@
     }
 
     .settings-btn:hover {
-      background-color: #1e293b;
+      background-color: var(--hover);
       opacity: 1;
     }
 
     /* Info del marcador */
     .bookmark-info {
-      background-color: #1e293b;
-      border: 1px solid #334155;
+      background-color: var(--card);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 14px;
       margin-bottom: 16px;
@@ -75,7 +103,7 @@
     .bookmark-title {
       font-size: 14px;
       font-weight: 600;
-      color: #ffffff;
+      color: var(--text-strong);
       margin-bottom: 6px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -85,7 +113,7 @@
 
     .bookmark-url {
       font-size: 12px;
-      color: #64748b;
+      color: var(--text-subtle);
       display: -webkit-box;
       -webkit-line-clamp: 1;
       -webkit-box-orient: vertical;
@@ -97,7 +125,7 @@
     .section-label {
       font-size: 12px;
       font-weight: 600;
-      color: #94a3b8;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-bottom: 8px;
@@ -118,8 +146,8 @@
       align-items: center;
       gap: 10px;
       padding: 10px 12px;
-      background-color: #1e293b;
-      border: 1px solid #334155;
+      background-color: var(--card);
+      border: 1px solid var(--border);
       border-radius: 10px;
       cursor: pointer;
       transition: all 0.15s;
@@ -127,8 +155,8 @@
     }
 
     .collection-item:hover {
-      background-color: #263449;
-      border-color: #475569;
+      background-color: var(--hover);
+      border-color: var(--border-hover);
     }
 
     .collection-item.selected {
@@ -138,11 +166,14 @@
 
     .collection-icon {
       font-size: 16px;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
     }
 
     .collection-name {
       flex: 1;
-      color: #e2e8f0;
+      color: var(--text);
     }
 
     .collection-check {
@@ -168,13 +199,13 @@
       font-size: 12px;
       cursor: pointer;
       transition: all 0.15s;
-      border: 1px solid #334155;
-      background-color: #1e293b;
-      color: #94a3b8;
+      border: 1px solid var(--border);
+      background-color: var(--card);
+      color: var(--text-muted);
     }
 
     .tag-item:hover {
-      border-color: #475569;
+      border-color: var(--border-hover);
     }
 
     .tag-item.selected {
@@ -195,9 +226,9 @@
       flex: 1;
       padding: 12px;
       background-color: transparent;
-      border: 1px solid #334155;
+      border: 1px solid var(--border);
       border-radius: 10px;
-      color: #94a3b8;
+      color: var(--text-muted);
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
@@ -205,8 +236,8 @@
     }
 
     .btn-cancel:hover {
-      background-color: #1e293b;
-      color: #e2e8f0;
+      background-color: var(--card);
+      color: var(--text);
     }
 
     .btn-save {
@@ -227,7 +258,7 @@
     }
 
     .btn-save:disabled {
-      background-color: #475569;
+      background-color: var(--border-hover);
       cursor: not-allowed;
     }
 
@@ -258,31 +289,30 @@
     .loading {
       text-align: center;
       padding: 20px;
-      color: #64748b;
+      color: var(--text-subtle);
       font-size: 13px;
     }
 
     .empty-message {
       text-align: center;
       padding: 12px;
-      color: #64748b;
+      color: var(--text-subtle);
       font-size: 13px;
-      background-color: #1e293b;
+      background-color: var(--card);
       border-radius: 10px;
-      border: 1px dashed #334155;
+      border: 1px dashed var(--border);
     }
 
-    /* NUEVO: Atajo de teclado */
     .shortcut-hint {
       text-align: center;
       margin-top: 12px;
       font-size: 11px;
-      color: #475569;
+      color: var(--text-faint);
     }
 
     .shortcut-hint kbd {
-      background-color: #1e293b;
-      border: 1px solid #334155;
+      background-color: var(--card);
+      border: 1px solid var(--border);
       border-radius: 4px;
       padding: 1px 6px;
       font-family: inherit;
@@ -299,12 +329,12 @@
     }
 
     ::-webkit-scrollbar-thumb {
-      background: #334155;
+      background: var(--border);
       border-radius: 3px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: #475569;
+      background: var(--border-hover);
     }
   </style>
 </head>
@@ -344,7 +374,7 @@
       <button class="btn-save" id="saveBtn">💾 Guardar</button>
     </div>
 
-    <!-- NUEVO: Pista de atajo de teclado -->
+    <!-- Pista de atajo de teclado -->
     <div class="shortcut-hint">
       <kbd>Enter</kbd> para guardar · <kbd>Esc</kbd> para cancelar
     </div>

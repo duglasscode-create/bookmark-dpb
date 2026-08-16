@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Bookmark DPB - Save Bookmark",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Guarda páginas, enlaces y resalta texto en Bookmark DPB",
   "permissions": [
     "contextMenus",

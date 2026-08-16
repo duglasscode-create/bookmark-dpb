@@ -23,6 +23,21 @@
   --hover-bg: #1e293b;
 }
 
+/* Bloques estilo Notion - versión OSCURA (para tema oscuro y personalizado oscuro) */
+:root,
+[data-theme="custom-dark"] {
+  --blk-default-text: #D4D4D4; --blk-default-bg: #191919; --blk-default-icon: #D4D4D4;
+  --blk-gray-text: #9B9B9B;    --blk-gray-bg: #252525;    --blk-gray-icon: #5A5A5A;
+  --blk-brown-text: #A27763;   --blk-brown-bg: #2E2724;   --blk-brown-icon: #604D4A;
+  --blk-orange-text: #CB7B37;  --blk-orange-bg: #36291F;  --blk-orange-icon: #854C1D;
+  --blk-yellow-text: #C19138;  --blk-yellow-bg: #372E20;  --blk-yellow-icon: #89632A;
+  --blk-green-text: #4F9768;   --blk-green-bg: #242B26;   --blk-green-icon: #2B593F;
+  --blk-blue-text: #447ACB;    --blk-blue-bg: #1F282D;    --blk-blue-icon: #2E7CD1;
+  --blk-purple-text: #865DBB;  --blk-purple-bg: #2A2430;  --blk-purple-icon: #8D5BC1;
+  --blk-pink-text: #BA4A78;    --blk-pink-bg: #2E2328;    --blk-pink-icon: #C94079;
+  --blk-red-text: #BE524B;     --blk-red-bg: #332523;     --blk-red-icon: #C4554D;
+}
+
 /* Tema claro */
 [data-theme="light"] {
   --bg-primary: #f8fafc;
@@ -42,23 +57,57 @@
   --hover-bg: #e2e8f0;
 }
 
-/* Tema personalizado (nuevo) */
-[data-theme="custom"] {
-  --bg-primary: #f7f7f6;
-  --bg-secondary: #ebecf0;
-  --bg-tertiary: #e2e8f0;
-  --bg-elevated: #ffffff;
-  --border-color: #d1d5db;
-  --border-light: #e5e7eb;
-  --text-primary: #1f2937;
-  --text-secondary: #374151;
-  --text-muted: #6b7280;
-  --text-subtle: #9ca3af;
-  --card-bg: #ffffff;
-  --card-border: #e5e7eb;
-  --input-bg: #f9fafb;
-  --input-border: #d1d5db;
-  --hover-bg: #e5e7eb;
+/* Bloques estilo Notion - versión CLARA (para tema claro y personalizado claro) */
+[data-theme="light"],
+[data-theme="custom-light"] {
+  --blk-default-text: #373530; --blk-default-bg: #FFFFFF; --blk-default-icon: #373530;
+  --blk-gray-text: #787774;    --blk-gray-bg: #F1F1EF;    --blk-gray-icon: #979A9B;
+  --blk-brown-text: #976D57;   --blk-brown-bg: #F3EEEE;   --blk-brown-icon: #937264;
+  --blk-orange-text: #CC782F;  --blk-orange-bg: #F8ECDF;  --blk-orange-icon: #FFA344;
+  --blk-yellow-text: #C29343;  --blk-yellow-bg: #FAF3DD;  --blk-yellow-icon: #FFDC49;
+  --blk-green-text: #548164;   --blk-green-bg: #EEF3ED;   --blk-green-icon: #4DAB9A;
+  --blk-blue-text: #487CA5;    --blk-blue-bg: #E9F3F7;    --blk-blue-icon: #337EA9;
+  --blk-purple-text: #8A67AB;  --blk-purple-bg: #F6F3F8;  --blk-purple-icon: #9065B0;
+  --blk-pink-text: #B35488;    --blk-pink-bg: #F9F2F5;    --blk-pink-icon: #C14C8A;
+  --blk-red-text: #C4554D;     --blk-red-bg: #FAECEC;     --blk-red-icon: #D44C47;
+}
+
+/* Tema personalizado - MODO CLARO (paleta Notion) */
+[data-theme="custom-light"] {
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #FBFBFA;
+  --bg-tertiary: #F1F1EF;
+  --bg-elevated: #FFFFFF;
+  --border-color: #E9E9E7;
+  --border-light: #D4D4D4;
+  --text-primary: #373530;
+  --text-secondary: #373530;
+  --text-muted: #787774;
+  --text-subtle: #9B9B9B;
+  --card-bg: #FFFFFF;
+  --card-border: #E9E9E7;
+  --input-bg: #F7F7F5;
+  --input-border: #D4D4D4;
+  --hover-bg: #F1F1EF;
+}
+
+/* Tema personalizado - MODO OSCURO (paleta Notion) */
+[data-theme="custom-dark"] {
+  --bg-primary: #191919;
+  --bg-secondary: #202020;
+  --bg-tertiary: #252525;
+  --bg-elevated: #252525;
+  --border-color: #2E2E2E;
+  --border-light: #3F3F3F;
+  --text-primary: #D4D4D4;
+  --text-secondary: #D4D4D4;
+  --text-muted: #9B9B9B;
+  --text-subtle: #6F6F6F;
+  --card-bg: #202020;
+  --card-border: #2E2E2E;
+  --input-bg: #252525;
+  --input-border: #3F3F3F;
+  --hover-bg: #2A2A2A;
 }
 
 /* Aplicar transiciones suaves al cambiar de tema */

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { IconPicker } from "./IconPicker";
+import { COLOR_OPTIONS, blockBgStyle, blockTextStyle } from "@/utils/notionColors";
 
 type Collection = {
   id: string;
@@ -16,36 +17,6 @@ type CollectionModalProps = {
   collections?: Collection[];
 };
 
-const colorOptions = [
-  "blue",
-  "purple",
-  "pink",
-  "red",
-  "orange",
-  "amber",
-  "emerald",
-  "teal",
-  "cyan",
-  "indigo",
-  "violet",
-  "fuchsia",
-];
-
-const colorClasses: Record<string, string> = {
-  blue: "bg-blue-500",
-  purple: "bg-purple-500",
-  pink: "bg-pink-500",
-  red: "bg-red-500",
-  orange: "bg-orange-500",
-  amber: "bg-amber-500",
-  emerald: "bg-emerald-500",
-  teal: "bg-teal-500",
-  cyan: "bg-cyan-500",
-  indigo: "bg-indigo-500",
-  violet: "bg-violet-500",
-  fuchsia: "bg-fuchsia-500",
-};
-
 export function CollectionModal({
   isOpen,
   onClose,
@@ -54,16 +25,16 @@ export function CollectionModal({
   collections = [],
 }: CollectionModalProps) {
   const [name, setName] = useState("");
-  const [color, setColor] = useState("none");
+  const [color, setColor] = useState("default");
   const [icon, setIcon] = useState("📁");
   const [parentId, setParentId] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
-      onSave(name.trim(), color === "none" ? "" : color, icon || "📁", parentId);
+      onSave(name.trim(), color, icon || "📁", parentId);
       setName("");
-      setColor("none");
+      setColor("default");
       setIcon("📁");
       setParentId("");
     }
@@ -78,7 +49,7 @@ export function CollectionModal({
         onClick={onClose}
       ></div>
 
-      <div className="relative w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
+            <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
         <div className="mb-6 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-white">
             📁 Nueva colección
@@ -129,39 +100,35 @@ export function CollectionModal({
             </p>
           </div>
 
-          {/* Color (con opción SIN COLOR) */}
+          {/* Color (paleta Notion) */}
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-300">
               Color
             </label>
             <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setColor("none")}
-                className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-dashed transition ${
-                  color === "none"
-                    ? "border-white ring-2 ring-blue-500 ring-offset-2 ring-offset-slate-900"
-                    : "border-slate-600 hover:scale-110"
-                }`}
-                title="Sin color (solo icono)"
-              >
-                <span className="text-xs text-slate-400">✕</span>
-              </button>
-              {colorOptions.map((colorOption) => (
+              {COLOR_OPTIONS.map((opt) => (
                 <button
-                  key={colorOption}
+                  key={opt.value}
                   type="button"
-                  onClick={() => setColor(colorOption)}
-                  className={`h-8 w-8 rounded-full ${colorClasses[colorOption]} transition ${
-                    color === colorOption
-                      ? "ring-2 ring-white ring-offset-2 ring-offset-slate-900"
+                  onClick={() => setColor(opt.value)}
+                  className={`flex h-9 w-9 items-center justify-center rounded-lg border text-sm font-semibold transition ${
+                    color === opt.value
+                      ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-slate-900"
                       : "hover:scale-110"
                   }`}
-                />
+                  style={{
+                    backgroundColor: `var(--blk-${opt.value}-bg)`,
+                    color: `var(--blk-${opt.value}-text)`,
+                    borderColor: `var(--blk-${opt.value}-icon)`,
+                  }}
+                  title={opt.label}
+                >
+                  A
+                </button>
               ))}
             </div>
             <p className="mt-1.5 text-xs text-slate-500">
-              💡 Elige ✕ para usar solo el icono, sin color.
+              💡 "Predeterminado" = sin color de fondo (solo icono).
             </p>
           </div>
 

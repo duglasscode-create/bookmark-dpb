@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import type { ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Sidebar } from "./Sidebar";
+import { HomeView } from "./HomeView";
 import { BookmarkManager } from "./BookmarkManager";
 import { TrashView } from "./TrashView";
 import { StatsPanel } from "./StatsPanel";
@@ -11,6 +12,8 @@ import { HighlightsPanel } from "./HighlightsPanel";
 import { RemindersPanel } from "./RemindersPanel";
 import { ActivityPanel } from "./ActivityPanel";
 import { AutoRulesPanel } from "./AutoRulesPanel";
+import { NotesPanel } from "./NotesPanel";
+import { AiPanel } from "./AiPanel";
 import { CollectionModal } from "./CollectionModal";
 import { EditCollectionModal } from "./EditCollectionModal";
 import { ImportModal } from "./ImportModal";
@@ -19,12 +22,13 @@ import { ShareCollectionModal } from "./ShareCollectionModal";
 import { AddBookmarkModal } from "./AddBookmarkModal";
 import { TagsManagerModal } from "./TagsManagerModal";
 import { ViewSwitcher, type ViewMode } from "./ViewSwitcher";
-import { ThemeSwitcher } from "./ThemeSwitcher";
-import { LogoutButton } from "./LogoutButton";
+import { SettingsMenu } from "./SettingsMenu";
+import { HelpMenu } from "./HelpMenu";
+import { FloatingActions } from "./FloatingActions";
 import { IconDisplay } from "./IconPicker";
 import { logActivity } from "@/utils/activityLog";
 
-type Theme = "dark" | "light" | "system" | "custom";
+type Theme = "dark" | "light" | "system";
 
 type Collection = {
   id: string;
@@ -56,7 +60,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loadingCollections, setLoadingCollections] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<string>("all");
+  const [activeFilter, setActiveFilter] = useState<string>("home");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isSavingCollection, setIsSavingCollection] = useState(false);
@@ -72,7 +76,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [cardZoom, setCardZoom] = useState(3);
 
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
   const [isTagsManagerOpen, setIsTagsManagerOpen] = useState(false);
 
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -85,19 +89,23 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
     if (typeof window !== "undefined") {
       const savedViewMode = localStorage.getItem("viewMode") as ViewMode;
       const savedZoom = localStorage.getItem("cardZoom");
-      const savedTheme = localStorage.getItem("theme") as Theme;
+      
 
       if (savedViewMode) setViewMode(savedViewMode);
       if (savedZoom) setCardZoom(parseInt(savedZoom, 10));
-      if (savedTheme) setTheme(savedTheme);
+      
     }
   }, []);
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
     const applyTheme = () => {
       if (theme === "system") {
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        document.documentElement.setAttribute("data-theme", prefersDark ? "dark" : "light");
+        document.documentElement.setAttribute(
+          "data-theme",
+          mediaQuery.matches ? "dark" : "light"
+        );
       } else {
         document.documentElement.setAttribute("data-theme", theme);
       }
@@ -106,7 +114,6 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
     applyTheme();
 
     if (theme === "system") {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
       const handleChange = () => applyTheme();
       mediaQuery.addEventListener("change", handleChange);
       return () => mediaQuery.removeEventListener("change", handleChange);
@@ -238,7 +245,6 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
   const getIsDarkMode = () => {
     if (theme === "dark") return true;
     if (theme === "light") return false;
-    if (theme === "custom") return false;
     if (typeof window !== "undefined") {
       return window.matchMedia("(prefers-color-scheme: dark)").matches;
     }
@@ -259,6 +265,9 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
       if (isTyping) return;
 
       switch (e.key.toLowerCase()) {
+        case "h":
+          setActiveFilter("home");
+          break;
         case "1":
           setActiveFilter("all");
           break;
@@ -282,6 +291,12 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
           break;
         case "8":
           setActiveFilter("auto_rules");
+          break;
+        case "9":
+          setActiveFilter("notes");
+          break;
+                  case "i":
+          setActiveFilter("ai");
           break;
         case "n":
           setIsAddModalOpen(true);
@@ -510,7 +525,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
         fetchCollections();
         fetchTrashCount();
         if (activeFilter === collectionId) {
-          setActiveFilter("all");
+          setActiveFilter("home");
         }
 
         logActivity(
@@ -540,6 +555,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
     : null;
 
   const getFilterTitle = (): ReactNode => {
+    if (activeFilter === "home") return "🏠 Home";
     if (activeFilter === "all") return "📚 Todos los marcadores";
     if (activeFilter === "favorites") return "⭐ Favoritos";
     if (activeFilter === "trash") return "🗑️ Papelera";
@@ -549,7 +565,8 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
     if (activeFilter === "activity") return "🕐 Historial";
     if (activeFilter === "auto_rules") return "🎯 Reglas inteligentes";
     if (activeFilter === "pending_read") return "🔖 Leer después";
-
+    if (activeFilter === "notes") return "📝 Notas";
+    if (activeFilter === "ai") return "🤖 Asistentes IA";
     if (activeFilter.startsWith("tag:")) {
       const tagId = activeFilter.replace("tag:", "");
       const tag = tags.find((t) => t.id === tagId);
@@ -575,15 +592,35 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
   };
 
   const showViewControls =
+    activeFilter !== "home" &&
     activeFilter !== "trash" &&
     activeFilter !== "stats" &&
     activeFilter !== "highlights" &&
     activeFilter !== "reminders" &&
     activeFilter !== "activity" &&
     activeFilter !== "auto_rules" &&
+    activeFilter !== "notes" &&
+        activeFilter !== "ai" &&
     !activeFilter.startsWith("tag:");
 
   const renderContent = () => {
+    if (activeFilter === "home") {
+      return (
+        <HomeView
+          userId={userId}
+          collections={collections}
+          isDarkMode={isDarkMode}
+          onSelectCollection={(id) => setActiveFilter(id)}
+          onEditCollection={handleEditCollection}
+          onDeleteCollection={handleDeleteCollection}
+          onShareCollection={handleShareCollection}
+          onAddBookmark={() => setIsAddModalOpen(true)}
+          onReorderCollections={handleReorderCollections}
+          onGoNotes={() => setActiveFilter("notes")}
+        />
+      );
+    }
+
     if (activeFilter === "trash") {
       return <TrashView userId={userId} onTrashChange={handleTrashChange} />;
     }
@@ -608,6 +645,12 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
       return <AutoRulesPanel userId={userId} />;
     }
 
+    if (activeFilter === "notes") {
+      return <NotesPanel userId={userId} isDarkMode={isDarkMode} />;
+    }
+    if (activeFilter === "ai") {
+      return <AiPanel userId={userId} isDarkMode={isDarkMode} />;
+    }
     return (
       <BookmarkManager
         userId={userId}
@@ -624,11 +667,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
   };
 
   return (
-    <div
-      className={`flex h-screen overflow-hidden ${
-        isDarkMode ? "bg-slate-950" : "bg-slate-50"
-      }`}
-    >
+    <div className="flex h-screen overflow-hidden bg-[var(--bg-primary)]">
       <Sidebar
         collections={collections}
         tags={tags}
@@ -653,11 +692,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
 
       <div className="flex flex-1 flex-col overflow-hidden">
         <header
-          className={`flex items-center justify-between border-b px-4 md:px-6 py-3 md:py-4 ${
-            isDarkMode
-              ? "border-slate-800 bg-slate-900/50"
-              : "border-slate-200 bg-white"
-          }`}
+          className={`flex items-center justify-between border-b border-[color:var(--border-color)] bg-[var(--bg-secondary)] px-4 md:px-6 py-3 md:py-4`}
         >
           <div className="flex items-center gap-3 min-w-0">
             <button
@@ -711,97 +746,72 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
                     : "border-slate-300 bg-white"
                 }`}
               >
-                <span
-                  className={`text-xs ${
-                    isDarkMode ? "text-slate-400" : "text-slate-500"
-                  }`}
-                >
+                <span className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
                   🔍
                 </span>
-                <input
+                           <input
                   type="range"
                   min="1"
                   max="5"
-                  value={cardZoom}
-                  onChange={(e) => setCardZoom(parseInt(e.target.value, 10))}
+                  value={6 - cardZoom}
+                  onChange={(e) => setCardZoom(6 - parseInt(e.target.value, 10))}
                   className="h-1.5 w-20 cursor-pointer"
                   title="Tamaño de las tarjetas"
                 />
-                <span
-                  className={`text-xs ${
-                    isDarkMode ? "text-slate-400" : "text-slate-500"
-                  }`}
-                >
+                <span className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
                   🔎
                 </span>
               </div>
             )}
 
-            {showViewControls && (
-              <button
-                onClick={() => setIsAddModalOpen(true)}
-                className="flex items-center gap-2 rounded-xl bg-blue-600 px-3 md:px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
-                title="Agregar marcador (N)"
-              >
-                <span className="text-lg leading-none">+</span>
-                <span className="hidden sm:inline">Nuevo</span>
-              </button>
-            )}
-
-            <div className="hidden sm:block">
-              <ThemeSwitcher
-                theme={theme}
-                onThemeChange={setTheme}
-                isDarkMode={isDarkMode}
-              />
-            </div>
-
             <button
-              onClick={() => setIsShortcutsHelpOpen(true)}
-              className={`hidden md:block rounded-lg border px-3 py-2 text-sm transition ${
-                isDarkMode
-                  ? "border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white"
-                  : "border-slate-300 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-              }`}
-              title="Atajos de teclado (?)"
+              onClick={() => setIsAddModalOpen(true)}
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-3 md:px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+              title="Agregar marcador (N)"
             >
-              ⌨️
+              <span className="text-lg leading-none">+</span>
+              <span className="hidden sm:inline">Nuevo</span>
             </button>
 
-            <LogoutButton />
+            <HelpMenu
+              isDarkMode={isDarkMode}
+              onOpenShortcuts={() => setIsShortcutsHelpOpen(true)}
+            />
+
+            <SettingsMenu
+              isDarkMode={isDarkMode}
+              theme={theme}
+              onThemeChange={setTheme}
+              onImport={() => setIsImportModalOpen(true)}
+              onManageTags={() => setIsTagsManagerOpen(true)}
+              userId={userId}
+            />
           </div>
         </header>
 
         {showViewControls && (
           <div
-            className={`flex md:hidden items-center justify-between gap-2 border-b px-4 py-2 ${
-              isDarkMode
-                ? "border-slate-800 bg-slate-900/30"
-                : "border-slate-200 bg-white"
-            }`}
+            className={`flex md:hidden items-center justify-between gap-2 border-b border-[color:var(--border-color)] bg-[var(--bg-secondary)] px-4 py-2`}
           >
             <ViewSwitcher
               viewMode={viewMode}
               onChangeView={setViewMode}
               isDarkMode={isDarkMode}
             />
-
-            <ThemeSwitcher
-              theme={theme}
-              onThemeChange={setTheme}
-              isDarkMode={isDarkMode}
-            />
           </div>
         )}
 
-        <main
-          className={`flex-1 overflow-y-auto p-4 md:p-6 ${
-            isDarkMode ? "" : "bg-slate-50"
-          }`}
-        >
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {renderContent()}
         </main>
       </div>
+
+      <FloatingActions
+        isDarkMode={isDarkMode}
+        onAddBookmark={() => setIsAddModalOpen(true)}
+        onNewCollection={() => setIsModalOpen(true)}
+        onGoNotes={() => setActiveFilter("notes")}
+      />
 
       <CollectionModal
         isOpen={isModalOpen}

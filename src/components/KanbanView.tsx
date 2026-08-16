@@ -3,6 +3,11 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { IconDisplay } from "./IconPicker";
+import {
+  blockBorderTopStyle,
+  blockTextStyle,
+  blockIconStyle,
+} from "@/utils/notionColors";
 
 type KanbanBookmark = {
   id: string;
@@ -27,22 +32,6 @@ type KanbanViewProps = {
   onRead: (url: string, title: string) => void;
   onDeleteCollection: (collectionId: string, collectionName: string) => void;
   onTrashChange?: () => void;
-};
-
-const colorClasses: Record<string, string> = {
-  blue: "border-t-blue-500",
-  purple: "border-t-purple-500",
-  pink: "border-t-pink-500",
-  red: "border-t-red-500",
-  orange: "border-t-orange-500",
-  amber: "border-t-amber-500",
-  emerald: "border-t-emerald-500",
-  teal: "border-t-teal-500",
-  cyan: "border-t-cyan-500",
-  indigo: "border-t-indigo-500",
-  violet: "border-t-violet-500",
-  fuchsia: "border-t-fuchsia-500",
-  slate: "border-t-slate-500",
 };
 
 export function KanbanView({
@@ -215,19 +204,19 @@ export function KanbanView({
       <div className="flex items-center justify-center py-16">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
-          <p className="text-slate-400">Cargando tablero...</p>
+          <p className="text-[var(--text-muted)]">Cargando tablero...</p>
         </div>
       </div>
     );
   }
 
   const columns = [
-    { id: null, name: "Sin colección", icon: "📂", color: "slate" },
+    { id: null, name: "Sin colección", icon: "📂", color: "default" },
     ...collections.map((c) => ({
       id: c.id,
       name: c.name,
       icon: c.icon || "📁",
-      color: c.color || "",
+      color: c.color || "default",
     })),
   ];
 
@@ -239,33 +228,36 @@ export function KanbanView({
           const columnKey = column.id === null ? "uncollected" : column.id;
           const isOver = dragOverColumn === columnKey;
           const isRealCollection = column.id !== null;
-          const borderClass = column.color && colorClasses[column.color] 
-            ? colorClasses[column.color] 
-            : "border-t-slate-500";
 
           return (
             <div
               key={columnKey}
-              className={`flex w-72 flex-col rounded-2xl border-t-4 bg-slate-900 transition-all ${borderClass} ${
-                isOver
-                  ? "ring-2 ring-blue-500 bg-slate-800/80"
-                  : "border border-slate-800"
+              className={`flex w-72 flex-col rounded-2xl border-t-4 border-x border-b border-[color:var(--card-border)] bg-[var(--card-bg)] transition-all ${
+                isOver ? "ring-2 ring-blue-500" : ""
               }`}
+              style={blockBorderTopStyle(column.color)}
               onDragOver={(e) => handleDragOver(e, column.id)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, column.id)}
             >
-              <div className="group flex items-center justify-between px-4 py-3 border-b border-slate-800">
+              {/* Header de la columna */}
+              <div className="group flex items-center justify-between px-4 py-3 border-b border-[color:var(--card-border)]">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="inline-flex shrink-0 items-center">
+                  <span
+                    className="inline-flex shrink-0 items-center"
+                    style={blockIconStyle(column.color)}
+                  >
                     <IconDisplay icon={column.icon} size={18} />
                   </span>
-                  <h3 className="text-sm font-semibold text-white truncate">
+                  <h3
+                    className="text-sm font-semibold truncate"
+                    style={blockTextStyle(column.color)}
+                  >
                     {column.name}
                   </h3>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-400">
+                  <span className="rounded-full bg-[var(--hover-bg)] px-2 py-0.5 text-xs font-medium text-[var(--text-muted)]">
                     {columnBookmarks.length}
                   </span>
 
@@ -274,7 +266,7 @@ export function KanbanView({
                       onClick={() =>
                         handleDeleteColumn(column.id!, column.name)
                       }
-                      className="hidden h-6 w-6 items-center justify-center rounded-lg text-slate-500 transition hover:bg-red-500/20 hover:text-red-400 group-hover:flex"
+                      className="hidden h-6 w-6 items-center justify-center rounded-lg text-[var(--text-subtle)] transition hover:bg-red-500/20 hover:text-red-400 group-hover:flex"
                       title={`Eliminar colección "${column.name}"`}
                     >
                       <svg
@@ -295,10 +287,11 @@ export function KanbanView({
                 </div>
               </div>
 
+              {/* Tarjetas de la columna */}
               <div className="flex-1 space-y-3 overflow-y-auto p-3 max-h-[60vh]">
                 {columnBookmarks.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-slate-700 p-6 text-center">
-                    <p className="text-xs text-slate-500">
+                  <div className="rounded-xl border border-dashed border-[color:var(--border-light)] p-6 text-center">
+                    <p className="text-xs text-[var(--text-subtle)]">
                       {isOver ? "Suelta aquí" : "Arrastra marcadores aquí"}
                     </p>
                   </div>
@@ -314,7 +307,7 @@ export function KanbanView({
                         draggable
                         onDragStart={(e) => handleDragStart(e, bookmark.id)}
                         onDragEnd={handleDragEnd}
-                        className={`group cursor-grab rounded-xl border border-slate-700 bg-slate-800 p-3 transition-all hover:border-slate-600 hover:shadow-lg active:cursor-grabbing ${
+                        className={`group cursor-grab rounded-xl border border-[color:var(--border-color)] bg-[var(--bg-tertiary)] p-3 transition-all hover:border-[color:var(--border-light)] hover:shadow-lg active:cursor-grabbing ${
                           draggedBookmarkId === bookmark.id
                             ? "opacity-50 rotate-2"
                             : ""
@@ -325,7 +318,7 @@ export function KanbanView({
                             href={bookmark.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-1 text-sm font-medium text-white hover:text-blue-400 line-clamp-2"
+                            className="flex-1 text-sm font-medium text-[var(--text-primary)] hover:text-blue-400 line-clamp-2"
                             onClick={(e) => e.stopPropagation()}
                           >
                             {bookmark.title || bookmark.url}
@@ -335,7 +328,7 @@ export function KanbanView({
                               onClick={() =>
                                 onRead(bookmark.url, bookmark.title || bookmark.url)
                               }
-                              className="rounded p-1 text-xs transition hover:bg-slate-700"
+                              className="rounded p-1 text-xs transition hover:bg-[var(--hover-bg)]"
                               title="Leer"
                             >
                               📖
@@ -356,13 +349,13 @@ export function KanbanView({
                         </div>
 
                         {bookmark.description && (
-                          <p className="mb-2 text-xs text-slate-400 line-clamp-2">
+                          <p className="mb-2 text-xs text-[var(--text-muted)] line-clamp-2">
                             {bookmark.description}
                           </p>
                         )}
 
                         <div className="flex items-center justify-between">
-                          <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                          <span className="flex items-center gap-1.5 text-xs text-[var(--text-subtle)]">
                             {bookmark.domain && (
                               <>
                                 <span className="inline-flex shrink-0 items-center">
@@ -398,10 +391,11 @@ export function KanbanView({
         })}
       </div>
 
+      {/* Indicador de movimiento */}
       {moving && (
-        <div className="fixed bottom-6 right-6 flex items-center gap-2 rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 shadow-xl">
+        <div className="fixed bottom-6 right-6 flex items-center gap-2 rounded-xl bg-[var(--bg-elevated)] border border-[color:var(--border-color)] px-4 py-3 shadow-xl">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
-          <span className="text-sm text-slate-300">Moviendo marcador...</span>
+          <span className="text-sm text-[var(--text-secondary)]">Moviendo marcador...</span>
         </div>
       )}
     </div>

@@ -14,33 +14,53 @@ type TagWithCount = Tag & {
 };
 
 const colorOptions = [
-  "blue",
-  "purple",
-  "pink",
+  "slate",
+  "gray",
+  "zinc",
+  "stone",
+  "brown",
   "red",
   "orange",
   "amber",
+  "yellow",
+  "lime",
+  "green",
   "emerald",
   "teal",
   "cyan",
+  "sky",
+  "blue",
   "indigo",
   "violet",
+  "purple",
   "fuchsia",
+  "pink",
+  "rose",
 ];
 
 const colorClasses: Record<string, string> = {
-  blue: "bg-blue-500",
-  purple: "bg-purple-500",
-  pink: "bg-pink-500",
+  slate: "bg-slate-500",
+  gray: "bg-gray-500",
+  zinc: "bg-zinc-500",
+  stone: "bg-stone-500",
+  brown: "bg-amber-700",
   red: "bg-red-500",
   orange: "bg-orange-500",
   amber: "bg-amber-500",
+  yellow: "bg-yellow-500",
+  lime: "bg-lime-500",
+  green: "bg-green-500",
   emerald: "bg-emerald-500",
   teal: "bg-teal-500",
   cyan: "bg-cyan-500",
+  sky: "bg-sky-500",
+  blue: "bg-blue-500",
   indigo: "bg-indigo-500",
   violet: "bg-violet-500",
+  purple: "bg-purple-500",
   fuchsia: "bg-fuchsia-500",
+  pink: "bg-pink-500",
+  rose: "bg-rose-500",
 };
 
 type TagsManagerModalProps = {
@@ -60,17 +80,14 @@ export function TagsManagerModal({
   const [tags, setTags] = useState<TagWithCount[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Estado para crear nueva etiqueta
   const [newTagName, setNewTagName] = useState("");
   const [newTagColor, setNewTagColor] = useState("blue");
   const [creating, setCreating] = useState(false);
 
-  // Estado para editar
   const [editingTagId, setEditingTagId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editColor, setEditColor] = useState("");
 
-  // Cargar etiquetas al abrir
   useEffect(() => {
     if (isOpen) {
       fetchTags();
@@ -80,7 +97,6 @@ export function TagsManagerModal({
   const fetchTags = async () => {
     setLoading(true);
 
-    // Cargar etiquetas
     const { data: tagsData } = await supabase
       .from("tags")
       .select("id, name, color")
@@ -88,7 +104,6 @@ export function TagsManagerModal({
       .order("name");
 
     if (tagsData) {
-      // Calcular contador de uso de cada etiqueta
       const { data: tagRelations } = await supabase
         .from("bookmark_tags")
         .select("tag_id")
@@ -180,14 +195,12 @@ export function TagsManagerModal({
     if (!confirm(message)) return;
 
     try {
-      // Eliminar las relaciones con marcadores
       await supabase
         .from("bookmark_tags")
         .delete()
         .eq("tag_id", tag.id)
         .eq("user_id", userId);
 
-      // Eliminar la etiqueta
       const { error } = await supabase
         .from("tags")
         .delete()
@@ -209,15 +222,12 @@ export function TagsManagerModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Fondo oscuro */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       ></div>
 
-      {/* Modal */}
       <div className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
-        {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-white flex items-center gap-2">
             🏷️ Gestionar etiquetas
@@ -252,7 +262,7 @@ export function TagsManagerModal({
               {creating ? "..." : "Crear"}
             </button>
           </div>
-          {/* Selector de color */}
+          {/* Selector de color ampliado: 22 colores */}
           <div className="mt-3 flex flex-wrap gap-2">
             {colorOptions.map((color) => (
               <button
@@ -267,6 +277,9 @@ export function TagsManagerModal({
               />
             ))}
           </div>
+          <p className="mt-2 text-xs text-slate-500">
+            {colorOptions.length} colores disponibles
+          </p>
         </div>
 
         {/* Lista de etiquetas */}
@@ -294,7 +307,6 @@ export function TagsManagerModal({
                   className="group rounded-xl border border-slate-700 bg-slate-800/50 p-3 transition hover:border-slate-600"
                 >
                   {editingTagId === tag.id ? (
-                    // Modo edición
                     <div className="space-y-3">
                       <input
                         type="text"
@@ -335,7 +347,6 @@ export function TagsManagerModal({
                       </div>
                     </div>
                   ) : (
-                    // Modo normal
                     <div className="flex items-center gap-3">
                       <span
                         className={`h-4 w-4 shrink-0 rounded-full ${

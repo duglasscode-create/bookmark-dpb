@@ -9,8 +9,31 @@ let selectedCollectionId = null;
 let selectedTagIds = [];
 let config = {};
 
+// Icono SVG genérico para colecciones con iconos UI (lucide)
+const LUCIDE_FALLBACK_SVG =
+  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
+
+// ============================================
+// TEMA AUTOMÁTICO (claro / oscuro según sistema)
+// ============================================
+function applySystemTheme() {
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  const set = () => {
+    document.documentElement.setAttribute(
+      "data-theme",
+      mq.matches ? "dark" : "light"
+    );
+  };
+  set();
+  if (mq.addEventListener) {
+    mq.addEventListener("change", set);
+  }
+}
+
 // Inicializar al cargar la página
 document.addEventListener("DOMContentLoaded", async () => {
+  applySystemTheme();
+
   // Cargar configuración
   config = await chrome.storage.local.get([
     "supabaseUrl",
@@ -50,7 +73,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("cancelBtn").addEventListener("click", cancelSave);
   document.getElementById("saveBtn").addEventListener("click", saveBookmark);
 
-  // NUEVO: Botón de configuración
+  // Botón de configuración
   document.getElementById("settingsBtn").addEventListener("click", () => {
     chrome.runtime.openOptionsPage();
   });
@@ -68,7 +91,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Cargar colecciones desde Supabase
 async function loadCollections() {
   const container = document.getElementById("collectionsList");
-
   try {
     const response = await fetch(
       `${config.supabaseUrl}/rest/v1/collections?user_id=eq.${config.userId}&order=position.asc`,
@@ -118,7 +140,7 @@ function renderCollections() {
   });
 }
 
-// Crear un item de colección
+// Crear un item de colección (con soporte para iconos lucide)
 function createCollectionItem(id, icon, name) {
   const item = document.createElement("div");
   item.className = "collection-item";
@@ -126,11 +148,12 @@ function createCollectionItem(id, icon, name) {
     item.classList.add("selected");
   }
 
-  item.innerHTML = `
-    <span class="collection-icon">${icon}</span>
-    <span class="collection-name">${escapeHtml(name)}</span>
-    <span class="collection-check">✓</span>
-  `;
+  const iconHtml =
+    icon && icon.startsWith("lucide:")
+      ? LUCIDE_FALLBACK_SVG
+      : escapeHtml(icon || "📁");
+
+  item.innerHTML = `<span class="collection-icon">${iconHtml}</span> <span class="collection-name">${escapeHtml(name)}</span> <span class="collection-check">✓</span>`;
 
   item.addEventListener("click", () => {
     selectedCollectionId = id;
@@ -143,7 +166,6 @@ function createCollectionItem(id, icon, name) {
 // Cargar etiquetas desde Supabase
 async function loadTags() {
   const container = document.getElementById("tagsList");
-
   try {
     const response = await fetch(
       `${config.supabaseUrl}/rest/v1/tags?user_id=eq.${config.userId}&order=name.asc`,
@@ -185,7 +207,6 @@ function renderTags() {
       item.classList.add("selected");
     }
     item.textContent = tag.name;
-
     item.addEventListener("click", () => {
       if (selectedTagIds.includes(tag.id)) {
         selectedTagIds = selectedTagIds.filter((id) => id !== tag.id);
@@ -194,7 +215,6 @@ function renderTags() {
       }
       renderTags();
     });
-
     container.appendChild(item);
   });
 }
