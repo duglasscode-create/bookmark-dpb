@@ -68,7 +68,14 @@ export function HomeView({
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
+   const [search, setSearch] = useState("");
+  const [homeNote, setHomeNote] = useState<{
+    id: string;
+    title: string;
+    content: string;
+    pinned: boolean;
+    updated_at: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -107,7 +114,28 @@ export function HomeView({
       setBookmarkToCollections(mapping);
     }
 
+    const { data: noteData } = await supabase
+      .from("notes")
+      .select("id, title, content, pinned, updated_at")
+      .eq("user_id", userId)
+      .eq("deleted", false)
+      .order("pinned", { ascending: false })
+      .order("updated_at", { ascending: false })
+      .limit(1);
+
+    if (noteData && noteData.length > 0) {
+      setHomeNote(noteData[0]);
+    }
+
     setLoading(false);
+  };
+
+  const stripHtml = (html: string): string => {
+    if (!html) return "";
+    if (typeof document === "undefined") return html;
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return (div.textContent || "").trim();
   };
 
   const q = search.trim().toLowerCase();
@@ -439,10 +467,8 @@ export function HomeView({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {rootCollections.map(renderCollectionCard)}
 
-        {/* Tarjeta de Notas */}
-        <div
-          className={`flex flex-col rounded-2xl border border-[color:var(--card-border)] bg-[var(--card-bg)] shadow-sm`}
-        >
+        {/* Tarjeta de Notas: muestra la nota fijada o la última nota */}
+        <div className="flex flex-col overflow-visible rounded-2xl border border-[color:var(--card-border)] bg-[var(--card-bg)] shadow-sm">
           <div
             className="flex items-center gap-2 rounded-t-2xl px-4 py-3"
             style={blockBgStyle("yellow")}
@@ -454,21 +480,64 @@ export function HomeView({
               onClick={onGoNotes}
               className="flex-1 truncate text-left text-sm font-bold hover:underline"
               style={blockTextStyle("yellow")}
+              title="Abrir bloc de notas"
             >
               Notas
             </button>
+            {homeNote && (
+              <span className="text-xs opacity-70" style={blockTextStyle("yellow")}>
+                {homeNote.pinned ? "📌 fijada" : "última"}
+              </span>
+            )}
           </div>
-          <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6">
-            <p className={`text-center text-xs ${isDarkMode ? "text-slate-500" : "text-slate-500"}`}>
-              Tus claves, ideas y recordatorios rápidos.
-            </p>
+
+          {homeNote ? (
             <button
               onClick={onGoNotes}
-              className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700"
+              className={`flex flex-1 flex-col gap-2 p-4 text-left transition ${
+                isDarkMode ? "hover:bg-slate-800/50" : "hover:bg-slate-100"
+              }`}
+              title="Abrir bloc de notas"
             >
-              Abrir bloc de notas
+              <span
+                className={`text-sm font-semibold ${
+                  isDarkMode ? "text-slate-200" : "text-slate-800"
+                }`}
+              >
+                {homeNote.title || "Sin título"}
+              </span>
+              <span
+                className={`line-clamp-4 text-xs ${
+                  isDarkMode ? "text-slate-400" : "text-slate-600"
+                }`}
+              >
+                {stripHtml(homeNote.content) || "(sin contenido)"}
+              </span>
+              <span
+                className={`mt-auto text-[10px] ${
+                  isDarkMode ? "text-slate-500" : "text-slate-400"
+                }`}
+              >
+                {new Date(homeNote.updated_at).toLocaleDateString("es-ES", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </span>
             </button>
-          </div>
+          ) : (
+            <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6">
+              <p className={`text-center text-xs ${isDarkMode ? "text-slate-500" : "text-slate-500"}`}>
+                Sin notas aún. Crea una o fija una con 📌 para verla aquí.
+              </p>
+              <button
+                onClick={onGoNotes}
+                className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700"
+              >
+                Abrir bloc de notas
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
