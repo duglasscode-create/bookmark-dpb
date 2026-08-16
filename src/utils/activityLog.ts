@@ -11,6 +11,7 @@ export type ActivityAction =
   | "bookmark_unfavorited"
   | "bookmark_moved"
   | "collection_created"
+  | "collection_updated"
   | "collection_deleted"
   | "tag_created"
   | "tag_edited"
@@ -57,6 +58,7 @@ export const actionLabels: Record<ActivityAction, string> = {
   bookmark_unfavorited: "Quitaste de favoritos",
   bookmark_moved: "Moviste un marcador",
   collection_created: "Creaste una colección",
+  collection_updated: "Editaste una colección",
   collection_deleted: "Eliminaste una colección",
   tag_created: "Creaste una etiqueta",
   tag_edited: "Editaste una etiqueta",
@@ -77,6 +79,7 @@ export const actionIcons: Record<ActivityAction, string> = {
   bookmark_unfavorited: "☆",
   bookmark_moved: "📁",
   collection_created: "📁",
+  collection_updated: "✏️",
   collection_deleted: "🗑️",
   tag_created: "🏷️",
   tag_edited: "🏷️",

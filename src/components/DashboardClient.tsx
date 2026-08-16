@@ -615,7 +615,6 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
           onDeleteCollection={handleDeleteCollection}
           onShareCollection={handleShareCollection}
           onAddBookmark={() => setIsAddModalOpen(true)}
-          onReorderCollections={handleReorderCollections}
           onGoNotes={() => setActiveFilter("notes")}
         />
       );
@@ -668,7 +667,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--bg-primary)]">
-      <Sidebar
+            <Sidebar
         collections={collections}
         tags={tags}
         activeFilter={activeFilter}
@@ -677,7 +676,6 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
         onEditCollection={handleEditCollection}
         onDeleteCollection={handleDeleteCollection}
         onShareCollection={handleShareCollection}
-        onReorderCollections={handleReorderCollections}
         onImport={() => setIsImportModalOpen(true)}
         isLoading={loadingCollections}
         trashCount={trashCount}
