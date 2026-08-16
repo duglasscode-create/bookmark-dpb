@@ -68,19 +68,14 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
   const [pendingReadCount, setPendingReadCount] = useState(0);
   const [collectionCounts, setCollectionCounts] = useState<Record<string, number>>({});
   const [isShortcutsHelpOpen, setIsShortcutsHelpOpen] = useState(false);
-
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [shareCollectionId, setShareCollectionId] = useState<string | null>(null);
-
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [cardZoom, setCardZoom] = useState(3);
-
   const [theme, setTheme] = useState<Theme>("light");
   const [isTagsManagerOpen, setIsTagsManagerOpen] = useState(false);
-
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-
   const [isEditCollectionModalOpen, setIsEditCollectionModalOpen] = useState(false);
   const [editCollectionId, setEditCollectionId] = useState<string | null>(null);
   const [isSavingCollectionEdit, setIsSavingCollectionEdit] = useState(false);
@@ -89,11 +84,8 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
     if (typeof window !== "undefined") {
       const savedViewMode = localStorage.getItem("viewMode") as ViewMode;
       const savedZoom = localStorage.getItem("cardZoom");
-      
-
       if (savedViewMode) setViewMode(savedViewMode);
       if (savedZoom) setCardZoom(parseInt(savedZoom, 10));
-      
     }
   }, []);
 
@@ -129,10 +121,6 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
   }, [cardZoom]);
 
   useEffect(() => {
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  useEffect(() => {
     fetchCollections();
     fetchTags();
     fetchTrashCount();
@@ -155,7 +143,6 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
       if (dueReminders && dueReminders.length > 0) {
         if (typeof window !== "undefined" && "Notification" in window) {
           let permission = Notification.permission;
-
           if (permission === "default") {
             permission = await Notification.requestPermission();
           }
@@ -176,7 +163,6 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
               const bookmark = bookmarksMap[reminder.bookmark_id];
               const title = bookmark?.title || "Marcador";
               const note = reminder.note ? `\n${reminder.note}` : "";
-
               new Notification("⏰ Recordatorio - Bookmark DPB", {
                 body: `${title}${note}`,
                 icon: "/favicon.ico",
@@ -187,10 +173,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
         }
 
         const reminderIds = dueReminders.map((r) => r.id);
-        await supabase
-          .from("reminders")
-          .update({ is_notified: true })
-          .in("id", reminderIds);
+        await supabase.from("reminders").update({ is_notified: true }).in("id", reminderIds);
       }
     } catch (error) {
       console.error("Error verificando recordatorios:", error);
@@ -268,6 +251,9 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
         case "h":
           setActiveFilter("home");
           break;
+        case "i":
+          setActiveFilter("ai");
+          break;
         case "1":
           setActiveFilter("all");
           break;
@@ -294,9 +280,6 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
           break;
         case "9":
           setActiveFilter("notes");
-          break;
-                  case "i":
-          setActiveFilter("ai");
           break;
         case "n":
           setIsAddModalOpen(true);
@@ -418,16 +401,8 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
     if (!error) {
       fetchCollections();
       setIsModalOpen(false);
-
       if (newCollection) {
-        logActivity(
-          supabase,
-          userId,
-          "collection_created",
-          "collection",
-          newCollection.id,
-          name
-        );
+        logActivity(supabase, userId, "collection_created", "collection", newCollection.id, name);
       }
     } else {
       alert("Error al crear colección: " + error.message);
@@ -474,10 +449,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
     setIsSavingCollectionEdit(false);
   };
 
-  const handleDeleteCollection = async (
-    collectionId: string,
-    collectionName: string
-  ) => {
+  const handleDeleteCollection = async (collectionId: string, collectionName: string) => {
     const { data: collectionBookmarks } = await supabase
       .from("bookmark_collections")
       .select("bookmark_id")
@@ -501,10 +473,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
       if (bookmarkIds.length > 0) {
         await supabase
           .from("bookmarks")
-          .update({
-            is_deleted: true,
-            deleted_at: new Date().toISOString(),
-          })
+          .update({ is_deleted: true, deleted_at: new Date().toISOString() })
           .in("id", bookmarkIds)
           .eq("user_id", userId);
       }
@@ -527,15 +496,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
         if (activeFilter === collectionId) {
           setActiveFilter("home");
         }
-
-        logActivity(
-          supabase,
-          userId,
-          "collection_deleted",
-          "collection",
-          collectionId,
-          collectionName
-        );
+        logActivity(supabase, userId, "collection_deleted", "collection", collectionId, collectionName);
       } else {
         alert("Error al eliminar colección: " + error.message);
       }
@@ -567,6 +528,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
     if (activeFilter === "pending_read") return "🔖 Leer después";
     if (activeFilter === "notes") return "📝 Notas";
     if (activeFilter === "ai") return "🤖 Asistentes IA";
+
     if (activeFilter.startsWith("tag:")) {
       const tagId = activeFilter.replace("tag:", "");
       const tag = tags.find((t) => t.id === tagId);
@@ -600,7 +562,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
     activeFilter !== "activity" &&
     activeFilter !== "auto_rules" &&
     activeFilter !== "notes" &&
-        activeFilter !== "ai" &&
+    activeFilter !== "ai" &&
     !activeFilter.startsWith("tag:");
 
   const renderContent = () => {
@@ -614,7 +576,10 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
           onEditCollection={handleEditCollection}
           onDeleteCollection={handleDeleteCollection}
           onShareCollection={handleShareCollection}
-v
+          onAddBookmark={() => setIsAddModalOpen(true)}
+          onReorderCollections={handleReorderCollections}
+          onGoNotes={() => setActiveFilter("notes")}
+        />
       );
     }
 
@@ -645,9 +610,11 @@ v
     if (activeFilter === "notes") {
       return <NotesPanel userId={userId} isDarkMode={isDarkMode} />;
     }
+
     if (activeFilter === "ai") {
       return <AiPanel userId={userId} isDarkMode={isDarkMode} />;
     }
+
     return (
       <BookmarkManager
         userId={userId}
@@ -665,7 +632,7 @@ v
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--bg-primary)]">
-            <Sidebar
+      <Sidebar
         collections={collections}
         tags={tags}
         activeFilter={activeFilter}
@@ -687,16 +654,12 @@ v
       />
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header
-          className={`flex items-center justify-between border-b border-[color:var(--border-color)] bg-[var(--bg-secondary)] px-4 md:px-6 py-3 md:py-4`}
-        >
+        <header className="flex items-center justify-between border-b border-[color:var(--border-color)] bg-[var(--bg-secondary)] px-4 md:px-6 py-3 md:py-4">
           <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => setIsMobileSidebarOpen(true)}
               className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition md:hidden ${
-                isDarkMode
-                  ? "text-slate-300 hover:bg-slate-800"
-                  : "text-slate-700 hover:bg-slate-100"
+                isDarkMode ? "text-slate-300 hover:bg-slate-800" : "text-slate-700 hover:bg-slate-100"
               }`}
               title="Abrir menú"
             >
@@ -706,18 +669,10 @@ v
             </button>
 
             <div className="min-w-0">
-              <h2
-                className={`text-base md:text-lg font-semibold truncate ${
-                  isDarkMode ? "text-white" : "text-slate-900"
-                }`}
-              >
+              <h2 className={`text-base md:text-lg font-semibold truncate ${isDarkMode ? "text-white" : "text-slate-900"}`}>
                 {getFilterTitle()}
               </h2>
-              <p
-                className={`hidden md:block text-xs ${
-                  isDarkMode ? "text-slate-500" : "text-slate-500"
-                }`}
-              >
+              <p className={`hidden md:block text-xs ${isDarkMode ? "text-slate-500" : "text-slate-500"}`}>
                 {userEmail}
               </p>
             </div>
@@ -726,26 +681,18 @@ v
           <div className="flex items-center gap-2 md:gap-3">
             {showViewControls && (
               <div className="hidden md:block">
-                <ViewSwitcher
-                  viewMode={viewMode}
-                  onChangeView={setViewMode}
-                  isDarkMode={isDarkMode}
-                />
+                <ViewSwitcher viewMode={viewMode} onChangeView={setViewMode} isDarkMode={isDarkMode} />
               </div>
             )}
 
             {showViewControls && viewMode === "grid" && (
               <div
                 className={`hidden lg:flex items-center gap-2 rounded-xl border px-3 py-2 ${
-                  isDarkMode
-                    ? "border-slate-700 bg-slate-800"
-                    : "border-slate-300 bg-white"
+                  isDarkMode ? "border-slate-700 bg-slate-800" : "border-slate-300 bg-white"
                 }`}
               >
-                <span className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
-                  🔍
-                </span>
-                           <input
+                <span className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>🔍</span>
+                <input
                   type="range"
                   min="1"
                   max="5"
@@ -754,9 +701,7 @@ v
                   className="h-1.5 w-20 cursor-pointer"
                   title="Tamaño de las tarjetas"
                 />
-                <span className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
-                  🔎
-                </span>
+                <span className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>🔎</span>
               </div>
             )}
 
@@ -769,10 +714,7 @@ v
               <span className="hidden sm:inline">Nuevo</span>
             </button>
 
-            <HelpMenu
-              isDarkMode={isDarkMode}
-              onOpenShortcuts={() => setIsShortcutsHelpOpen(true)}
-            />
+            <HelpMenu isDarkMode={isDarkMode} onOpenShortcuts={() => setIsShortcutsHelpOpen(true)} />
 
             <SettingsMenu
               isDarkMode={isDarkMode}
@@ -786,20 +728,12 @@ v
         </header>
 
         {showViewControls && (
-          <div
-            className={`flex md:hidden items-center justify-between gap-2 border-b border-[color:var(--border-color)] bg-[var(--bg-secondary)] px-4 py-2`}
-          >
-            <ViewSwitcher
-              viewMode={viewMode}
-              onChangeView={setViewMode}
-              isDarkMode={isDarkMode}
-            />
+          <div className="flex md:hidden items-center justify-between gap-2 border-b border-[color:var(--border-color)] bg-[var(--bg-secondary)] px-4 py-2">
+            <ViewSwitcher viewMode={viewMode} onChangeView={setViewMode} isDarkMode={isDarkMode} />
           </div>
         )}
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          {renderContent()}
-        </main>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">{renderContent()}</main>
       </div>
 
       <FloatingActions
@@ -825,11 +759,7 @@ v
         }}
         onSave={handleSaveCollectionEdit}
         isSaving={isSavingCollectionEdit}
-        collection={
-          editCollectionId
-            ? collections.find((c) => c.id === editCollectionId) || null
-            : null
-        }
+        collection={editCollectionId ? collections.find((c) => c.id === editCollectionId) || null : null}
         allCollections={collections}
         isDarkMode={isDarkMode}
       />
@@ -845,10 +775,7 @@ v
         userId={userId}
       />
 
-      <ShortcutsHelp
-        isOpen={isShortcutsHelpOpen}
-        onClose={() => setIsShortcutsHelpOpen(false)}
-      />
+      <ShortcutsHelp isOpen={isShortcutsHelpOpen} onClose={() => setIsShortcutsHelpOpen(false)} />
 
       <ShareCollectionModal
         isOpen={isShareModalOpen}
