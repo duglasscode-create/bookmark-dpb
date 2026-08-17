@@ -70,9 +70,11 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="mb-8 text-center">
-          <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600 text-3xl">
-            🔖
-          </div>
+          <img
+            src="/icon-512.png"
+            alt="Bookmark DPB"
+            className="mb-4 inline-block h-16 w-16 rounded-2xl object-cover"
+          />
           <h1 className="text-3xl font-bold">Bookmark DPB</h1>
           <p className="mt-2 text-slate-400">Best Bookmark</p>
         </div>

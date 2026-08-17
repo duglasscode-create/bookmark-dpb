@@ -488,9 +488,11 @@ export function Sidebar({
             className="flex items-center gap-3"
             title="Ir al inicio (Home)"
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-lg">
-              🔖
-            </div>
+            <img
+              src="/icon-512.png"
+              alt="Bookmark DPB"
+              className="h-9 w-9 shrink-0 rounded-xl object-cover"
+            />
             <div className="min-w-0 text-left">
               <h1
                 className={`text-sm font-bold whitespace-nowrap ${
