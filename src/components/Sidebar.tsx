@@ -17,8 +17,6 @@ import {
   Target,
   StickyNote,
   Bot,
-  Tags,
-  Settings2,
   Plus,
 } from "lucide-react";
 
@@ -57,31 +55,6 @@ type SidebarProps = {
   onManageTags: () => void;
   isMobileOpen: boolean;
   onMobileClose: () => void;
-};
-
-const colorMap: Record<string, string> = {
-  blue: "bg-blue-500",
-  purple: "bg-purple-500",
-  pink: "bg-pink-500",
-  red: "bg-red-500",
-  orange: "bg-orange-500",
-  amber: "bg-amber-500",
-  emerald: "bg-emerald-500",
-  teal: "bg-teal-500",
-  cyan: "bg-cyan-500",
-  indigo: "bg-indigo-500",
-  violet: "bg-violet-500",
-  fuchsia: "bg-fuchsia-500",
-  slate: "bg-slate-500",
-  gray: "bg-gray-500",
-  zinc: "bg-zinc-500",
-  stone: "bg-stone-500",
-  brown: "bg-amber-700",
-  yellow: "bg-yellow-500",
-  lime: "bg-lime-500",
-  green: "bg-green-500",
-  sky: "bg-sky-500",
-  rose: "bg-rose-500",
 };
 
 type NavItem = {
@@ -172,8 +145,6 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-const TAGS_SECTION_ID = "tags_section";
-
 export function Sidebar({
   collections,
   tags,
@@ -197,12 +168,11 @@ export function Sidebar({
   const [order, setOrder] = useState<string[]>([]);
   const [sidebarDragId, setSidebarDragId] = useState<string | null>(null);
   const [sidebarDragOverId, setSidebarDragOverId] = useState<string | null>(null);
-  const [tagsCollapsed, setTagsCollapsed] = useState(false);
   const [expandedCollections, setExpandedCollections] = useState<Set<string>>(new Set());
   const [desktopExpanded, setDesktopExpanded] = useState(false);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setTagsCollapsed(localStorage.getItem("tagsCollapsed") === "true");
       const savedOrder = localStorage.getItem("sidebarOrder");
       if (savedOrder) {
         try {
@@ -213,12 +183,6 @@ export function Sidebar({
       }
     }
   }, []);
-
-  const toggleTags = () => {
-    const newValue = !tagsCollapsed;
-    setTagsCollapsed(newValue);
-    localStorage.setItem("tagsCollapsed", String(newValue));
-  };
 
   const toggleExpanded = (collectionId: string) => {
     setExpandedCollections((prev) => {
@@ -246,7 +210,7 @@ export function Sidebar({
   const getEffectiveOrder = (): string[] => {
     const navIds = NAV_ITEMS.map((n) => n.id);
     const colIds = rootCollections.map((c) => `col:${c.id}`);
-    const allValidIds = [...navIds, ...colIds, TAGS_SECTION_ID];
+    const allValidIds = [...navIds, ...colIds];
     const valid = order.filter((id) => allValidIds.includes(id));
     const missing = allValidIds.filter((id) => !valid.includes(id));
     return [...valid, ...missing];
@@ -499,80 +463,6 @@ export function Sidebar({
     );
   };
 
-  const renderTagsSection = () => (
-    <div className="mt-2">
-      <div className="mb-2 flex items-center justify-between px-3">
-        <button
-          onClick={toggleTags}
-          className={`flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider transition ${
-            isDarkMode
-              ? "text-slate-500 hover:text-slate-300"
-              : "text-slate-500 hover:text-slate-700"
-          }`}
-          title={tagsCollapsed ? "Expandir" : "Colapsar"}
-        >
-          <Tags size={13} className="shrink-0" />
-          Etiquetas
-          <span className={isDarkMode ? "text-slate-600" : "text-slate-400"}>
-            ({tags.length})
-          </span>
-        </button>
-
-        <button
-          onClick={onManageTags}
-          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition ${
-            isDarkMode
-              ? "text-slate-400 hover:bg-slate-800 hover:text-white"
-              : "text-slate-500 hover:bg-slate-200 hover:text-slate-900"
-          }`}
-          title="Gestionar etiquetas"
-        >
-          <Settings2 size={14} />
-        </button>
-      </div>
-
-      {!tagsCollapsed && (
-        <div className="space-y-1">
-          {tags.map((tag) => (
-            <button
-              key={tag.id}
-              onClick={() => handleSelectFilter(`tag:${tag.id}`)}
-              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium transition ${
-                activeFilter === `tag:${tag.id}`
-                  ? isDarkMode
-                    ? "bg-slate-800 text-white"
-                    : "bg-blue-50 text-blue-700"
-                  : isDarkMode
-                  ? "text-slate-300 hover:bg-slate-800 hover:text-white"
-                  : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
-              }`}
-            >
-              <span
-                className={`h-2.5 w-2.5 shrink-0 rounded-full ${
-                  colorMap[tag.color] || "bg-slate-500"
-                }`}
-              ></span>
-              <span className="truncate">{tag.name}</span>
-            </button>
-          ))}
-
-          {tags.length === 0 && (
-            <button
-              onClick={onManageTags}
-              className={`flex w-full items-center justify-center gap-2 rounded-xl border border-dashed px-3 py-2.5 text-xs font-medium transition ${
-                isDarkMode
-                  ? "border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-300"
-                  : "border-slate-300 text-slate-500 hover:border-slate-400 hover:text-slate-700"
-              }`}
-            >
-              <Tags size={13} /> Crear etiqueta
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <>
       {isMobileOpen && (
@@ -586,7 +476,7 @@ export function Sidebar({
         className={`
           fixed inset-y-0 left-0 z-50 w-72 transform transition-all duration-300 ease-in-out
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
-                    md:static md:translate-x-0 ${desktopExpanded ? "md:w-64" : "md:w-16"} md:hover:w-64
+          md:static md:translate-x-0 ${desktopExpanded ? "md:w-64" : "md:w-16"} md:hover:w-64
           flex h-full flex-col overflow-hidden border-r border-[color:var(--border-color)] bg-[var(--bg-secondary)]
         `}
       >
@@ -619,26 +509,7 @@ export function Sidebar({
             </div>
           </button>
 
-                    <div className="flex items-center gap-1">
-            <button
-              onClick={() => setDesktopExpanded(!desktopExpanded)}
-              className={`hidden md:flex h-8 w-8 items-center justify-center rounded-lg transition ${
-                isDarkMode
-                  ? "text-slate-400 hover:bg-slate-800 hover:text-white"
-                  : "text-slate-500 hover:bg-slate-200 hover:text-slate-900"
-              }`}
-              title={desktopExpanded ? "Contraer panel" : "Expandir panel"}
-            >
-              <svg
-                className={`h-4 w-4 transition-transform ${desktopExpanded ? "rotate-180" : ""}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-
+          <div className="flex items-center gap-1">
             <button
               onClick={onNewCollection}
               className={`hidden md:flex h-8 w-8 items-center justify-center rounded-lg transition ${
@@ -667,7 +538,29 @@ export function Sidebar({
           </div>
         </div>
 
-                <nav className={`flex-1 overflow-y-auto overflow-x-hidden p-2 md:hover:p-4 transition-all whitespace-nowrap ${desktopExpanded ? "md:p-4" : ""}`}>
+        {/* Botón »/« SIEMPRE visible en modo escritorio/iPad horizontal */}
+        <div className="hidden md:flex justify-center border-b border-[color:var(--border-color)] py-1.5">
+          <button
+            onClick={() => setDesktopExpanded(!desktopExpanded)}
+            className={`flex h-7 w-7 items-center justify-center rounded-lg transition ${
+              isDarkMode
+                ? "text-slate-400 hover:bg-slate-800 hover:text-white"
+                : "text-slate-500 hover:bg-slate-200 hover:text-slate-900"
+            }`}
+            title={desktopExpanded ? "Contraer panel" : "Expandir panel"}
+          >
+            <svg
+              className={`h-4 w-4 transition-transform ${desktopExpanded ? "rotate-180" : ""}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        <nav className={`flex-1 overflow-y-auto overflow-x-hidden p-2 md:hover:p-4 transition-all whitespace-nowrap ${desktopExpanded ? "md:p-4" : ""}`}>
           <button
             onClick={() => handleSelectFilter("home")}
             className={`mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition ${
@@ -689,9 +582,6 @@ export function Sidebar({
 
           <div className="space-y-1">
             {getEffectiveOrder().map((id) => {
-              if (id === TAGS_SECTION_ID) {
-                return draggableWrap(id, renderTagsSection());
-              }
               if (id.startsWith("col:")) {
                 const col = collections.find((c) => c.id === id.slice(4));
                 if (!col) return null;

@@ -24,7 +24,7 @@ import { TagsManagerModal } from "./TagsManagerModal";
 import { ViewSwitcher, type ViewMode } from "./ViewSwitcher";
 import { SettingsMenu } from "./SettingsMenu";
 import { HelpMenu } from "./HelpMenu";
-import { BookmarkPlus, FolderPlus, StickyNote } from "lucide-react";
+import { BookmarkPlus, FolderPlus, StickyNote, Tags } from "lucide-react";
 import { IconDisplay } from "./IconPicker";
 import { logActivity } from "@/utils/activityLog";
 
@@ -54,6 +54,31 @@ type DashboardClientProps = {
 
 const AUTO_DELETE_DAYS = 30;
 
+const TAG_DOT: Record<string, string> = {
+  slate: "bg-slate-500",
+  gray: "bg-gray-500",
+  zinc: "bg-zinc-500",
+  stone: "bg-stone-500",
+  brown: "bg-amber-700",
+  red: "bg-red-500",
+  orange: "bg-orange-500",
+  amber: "bg-amber-500",
+  yellow: "bg-yellow-500",
+  lime: "bg-lime-500",
+  green: "bg-green-500",
+  emerald: "bg-emerald-500",
+  teal: "bg-teal-500",
+  cyan: "bg-cyan-500",
+  sky: "bg-sky-500",
+  blue: "bg-blue-500",
+  indigo: "bg-indigo-500",
+  violet: "bg-violet-500",
+  purple: "bg-purple-500",
+  fuchsia: "bg-fuchsia-500",
+  pink: "bg-pink-500",
+  rose: "bg-rose-500",
+};
+
 export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
   const supabase = createClient();
 
@@ -75,6 +100,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
   const [cardZoom, setCardZoom] = useState(3);
   const [theme, setTheme] = useState<Theme>("light");
   const [isTagsManagerOpen, setIsTagsManagerOpen] = useState(false);
+    const [isTagsMenuOpen, setIsTagsMenuOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isEditCollectionModalOpen, setIsEditCollectionModalOpen] = useState(false);
   const [editCollectionId, setEditCollectionId] = useState<string | null>(null);
@@ -704,6 +730,72 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
                 <span className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>🔎</span>
               </div>
             )}
+
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
+                isDarkMode
+                  ? "border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white"
+                  : "border-slate-300 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+              title="Nuevo marcador (N)"
+            >
+              <BookmarkPlus size={16} />
+            </button>            <div className="relative">
+              <button
+                onClick={() => setIsTagsMenuOpen(!isTagsMenuOpen)}
+                className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
+                  isDarkMode
+                    ? "border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white"
+                    : "border-slate-300 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                }`}
+                title="Etiquetas"
+              >
+                <Tags size={16} />
+              </button>
+
+              {isTagsMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-30"
+                    onClick={() => setIsTagsMenuOpen(false)}
+                  ></div>
+                  <div
+                    className={`absolute right-0 top-11 z-40 max-h-80 w-56 overflow-y-auto rounded-xl border py-2 shadow-xl ${
+                      isDarkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"
+                    }`}
+                  >
+                    <p
+                      className={`px-3 pb-1 text-xs font-semibold uppercase tracking-wider ${
+                        isDarkMode ? "text-slate-500" : "text-slate-400"
+                      }`}
+                    >
+                      🏷️ Etiquetas
+                    </p>
+                    {tags.length === 0 && (
+                      <p className={`px-3 py-2 text-xs ${isDarkMode ? "text-slate-500" : "text-slate-500"}`}>
+                        Sin etiquetas aún
+                      </p>
+                    )}
+                    {tags.map((tag) => (
+                      <button
+                        key={tag.id}
+                        onClick={() => {
+                          setActiveFilter(`tag:${tag.id}`);
+                          setIsTagsMenuOpen(false);
+                        }}
+                        className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition ${
+                          isDarkMode ? "text-slate-300 hover:bg-slate-700" : "text-slate-700 hover:bg-slate-100"
+                        }`}
+                      >
+                        <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${TAG_DOT[tag.color] || "bg-slate-500"}`}></span>
+                        <span className="truncate">{tag.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
 
             <button
               onClick={() => setIsAddModalOpen(true)}
