@@ -806,19 +806,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
               }`}
               title="Nuevo marcador (N)"
             >
-              <BookmarkPlus size={16} />
-            </button>
-
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
-                isDarkMode
-                  ? "border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white"
-                  : "border-slate-300 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-              }`}
-              title="Nueva colección"
-            >
-              <FolderPlus size={16} />
+                     <BookmarkPlus size={16} />
             </button>
 
             <button

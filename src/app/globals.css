@@ -166,4 +166,16 @@ input[type="range"]::-moz-range-thumb {
   cursor: pointer;
   border: 2px solid white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}/* ============================================
+   PANTALLAS TÁCTILES (iPad): los botones de
+   acción (editar, eliminar, fijar, ⋮) siempre
+   visibles, porque el hover no existe en táctil
+   ============================================ */
+@media (hover: none) {
+  .group-hover\:opacity-100 {
+    opacity: 1 !important;
+  }
+  .group-hover\:flex {
+    display: flex !important;
+  }
 }
