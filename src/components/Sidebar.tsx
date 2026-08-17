@@ -1,6 +1,6 @@
 "use client";
 
-iimport { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { IconDisplay } from "./IconPicker";
