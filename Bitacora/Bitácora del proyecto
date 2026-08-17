@@ -1,185 +1,123 @@
-# 📖 BITÁCORA — BOOKMARK DPB
+# 📖 BITÁCORA — BOOKMARK DPB (v2)
 
-> **Autor:** Duglass (duglasscode@gmail.com)
-> **Asistente IA:** Qwen
-> **Fecha de inicio del registro:** Domingo, 16 de agosto de 2026
-> **App en producción:** https://bookmark-dpb.vercel.app
-> **Repositorio:** https://github.com/duglasscode-create/bookmark-dpb
+> **Autor:** Duglass · **Asistente IA:** Qwen
+> **Inicio:** domingo 16 ago 2026 · **Actualizada:** lunes 17 ago 2026
+> **Producción:** https://bookmark-dpb.vercel.app
+> **Repo:** https://github.com/duglasscode-create/bookmark-dpb
 
 ---
 
-## 1. 🎯 QUÉ ES ESTE PROYECTO
+## 1. 🎯 QUÉ ES
 
-Gestor de marcadores personal compuesto por **3 piezas**:
-
-1. **App Web** (Next.js) instalable como app (PWA) en iPad/iPhone.
-2. **Extensión de Chrome** (v1.4.0) para guardar páginas, enlaces, selecciones y resaltar texto.
+Gestor de marcadores personal en 3 piezas:
+1. **App Web** Next.js (PWA instalable en iPad).
+2. **Extensión Chrome** v1.4.0 (guardar páginas, enlaces, selección, resaltar).
 3. **Backend Supabase** (PostgreSQL + Auth + RLS).
 
----
-
-## 2. 🧰 STACK TECNOLÓGICO
+## 2. 🧰 STACK
 
 | Capa | Tecnología |
 |---|---|
-| Framework | Next.js 16 (App Router) + TypeScript |
-| UI | React + Tailwind CSS |
-| Iconos | lucide-react (300+ en IconPicker) + emojis |
-| Backend | Supabase (PostgreSQL, Auth, RLS) |
-| Deploy | Vercel (auto-deploy desde GitHub) |
+| Web | Next.js 16 (App Router) + TypeScript + Tailwind |
+| Iconos | lucide-react (300+) + emojis |
+| Backend | Supabase (Auth, Postgres, RLS) |
+| Deploy | Vercel (auto desde GitHub) |
 | Extensión | Chrome Manifest V3 |
-| PWA | manifest.json + apple-touch-icon |
 
----
+## 3. 🔑 CUENTAS
 
-## 3. 🔑 CUENTAS Y ACCESOS
-
-| Servicio | Cuenta | Notas |
+| Uso | Cuenta | Nota |
 |---|---|---|
-| GitHub / Vercel / Supabase | duglasscode@gmail.com | Cuenta del proyecto. **Tiene TODOS los datos** |
-| App (login) | duglasscode@gmail.com | Contraseña: `Bookmark2024!` (puesta vía SQL) |
-| Gmail del iPad | duglasbator@gmail.com | Confirmado en Supabase (para el futuro) |
+| Proyecto (GitHub/Vercel/Supabase/app) | duglasscode@gmail.com | Contraseña app: `Bookmark2024!` (puesta vía SQL) |
+| Gmail del iPad | duglasbator@gmail.com | Confirmada en Supabase. **Los datos viven en la cuenta del proyecto** |
 
-⚠️ **Importante:** los marcadores/notas/colecciones pertenecen al `user_id` de
-`duglasscode@gmail.com`. En el iPad se entra con esa misma cuenta aunque el
-Gmail del dispositivo sea otro.
+⚠️ En el iPad se entra con `duglasscode@gmail.com` aunque el Gmail del dispositivo sea otro.
 
----
-
-## 4. 🗄️ BASE DE DATOS (SUPABASE)
+## 4. 🗄️ BASE DE DATOS
 
 Tablas: `bookmarks`, `collections`, `bookmark_collections`, `tags`,
 `bookmark_tags`, `highlights`, `reminders`, `activity_log`, `auto_rules`,
-`notes`, `ai_assistants`.
+`notes`, `ai_assistants`, `user_preferences`.
 
-SQL ejecutados en esta sesión:
+SQL clave (día 2):
 
 ```sql
--- Tabla de asistentes IA + políticas RLS
-CREATE TABLE IF NOT EXISTS ai_assistants (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  name text NOT NULL, url text NOT NULL, icon text,
-  created_at timestamptz NOT NULL DEFAULT now()
+CREATE TABLE IF NOT EXISTS user_preferences (
+  user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  sidebar_order jsonb,
+  updated_at timestamptz NOT NULL DEFAULT now()
 );
-ALTER TABLE ai_assistants ENABLE ROW LEVEL SECURITY;
--- (policies ai_select / ai_insert / ai_update / ai_delete con auth.uid() = user_id)
-
--- Papelera de notas
-ALTER TABLE notes ADD COLUMN IF NOT EXISTS deleted boolean NOT NULL DEFAULT false;
-
--- Contraseña de la cuenta del proyecto (sin correos)
-UPDATE auth.users
-SET encrypted_password = crypt('Bookmark2024!', gen_salt('bf')),
-    email_confirmed_at = COALESCE(email_confirmed_at, now())
-WHERE email = 'duglasscode@gmail.com';
--- (confirmed_at NO se puede tocar: es columna generada)
+ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
+-- Políticas: SELECT / INSERT / UPDATE con auth.uid() = user_id
 ```
 
----
+SQL clave (día 1): tabla `ai_assistants` + políticas; `notes.deleted`;
+contraseña con `crypt('Bookmark2024!', gen_salt('bf'))`
+(`confirmed_at` NO se toca: es columna generada).
 
-## 5. 🧩 ARCHIVOS PRINCIPALES DEL PROYECTO
+## 5. 🧩 ARCHIVOS PRINCIPALES
 
 ```
-src/app/layout.tsx            → metadata PWA (manifest, appleWebApp, viewport)
-src/app/login/page.tsx        → login con pestañas: 🔑 Contraseña / 📧 Código
-src/app/dashboard/page.tsx    → protege sesión y monta DashboardClient
-src/components/DashboardClient.tsx → orquestador (tema, atajos, header, modales)
-src/components/Sidebar.tsx    → panel reordenable (localStorage "sidebarOrder")
-src/components/HomeView.tsx   → tarjetas Notion + buscador + tarjeta Notas viva
-src/components/NotesPanel.tsx → notas estilo Boardly (panel lateral, 22 colores)
-src/components/AiPanel.tsx    → asistentes IA (Qwen, ChatGPT, Grok, Gemini...)
-src/components/IconPicker.tsx → 300+ iconos lucide + emojis + buscador
-src/components/TagsManagerModal.tsx → 22 colores de etiquetas
-src/components/SettingsMenu.tsx / HelpMenu.tsx / FloatingActions.tsx
-public/manifest.json, public/icon-192.png, icon-512.png, apple-touch-icon.png
+src/app/login/page.tsx          → pestañas 🔑 Contraseña / 📧 Código
+src/app/globals.css             → CSS táctil + vista cuadrícula limpia
+src/components/DashboardClient  → header (📁+ + 🏷️  ? ⚙️), tema, atajos
+src/components/Sidebar.tsx      → orden SINCRONIZADO vía Supabase, botón »/«
+src/components/HomeView.tsx     → tarjetas Notion + tarjeta Notas viva
+src/components/NotesPanel.tsx   → estilo Boardly (drawer, 22 colores, toolbar)
+src/components/BookmarkManager  → cuadrícula limpia / lista con acciones
+src/components/IconPicker.tsx   → 300+ lucide + emojis + buscador
+public/ → manifest.json, icon-192/512.png, apple-touch-icon.png
+docs/ → BITACORA.md, RESPALDO_CHAT.md
 ```
 
----
+## 6. ✅ FUNCIONES (resumen)
 
-## 6. ✅ FUNCIONALIDADES CONSTRUIDAS (RESUMEN DEL CHAT)
+**Web:** Home Notion reordenable · sidebar sincronizado entre dispositivos ·
+etiquetas en header (🏷️ desplegable) · notas Boardly con papelera ·
+Asistentes IA · 22 colores (notas y etiquetas) · zoom tarjetas y notas ·
+atajos (h, i, 1-9, n, g, l, k, ?) · tema claro/oscuro/sistema ·
+cuadrícula limpia / lista con acciones · PWA iPad.
 
-### App Web
-- ✅ **Home** estilo Notion: tarjetas de colecciones con subcolecciones y
-  marcadores visibles, buscador en vivo, reordenar arrastrando, menú ⋯.
-- ✅ **Tarjeta de Notas en Home**: muestra la nota 📌 fijada o la última nota.
-- ✅ **Sidebar reordenable** (arrastrar arriba/abajo): Home fijo; nav +
-  colecciones + sección Etiquetas mezclables. Iconos UI Lucide, sin números.
-- ✅ **Header minimalista**: 3 iconos UI (marcador+, colección+, notas) +
-  ❓ Ayuda + ⚙️ Ajustes (tema claro/oscuro/sistema, importar, etiquetas).
-- ✅ **Notas pro**: editor enriquecido, enlaces/imágenes, zoom, arrastrar,
-  fijar, bloquear 🔒, archivar 🗄️, **papelera propia** ♻️.
-- ✅ **Notas estilo Boardly**: ⋮ abre panel lateral derecho con
-  Style (22 colores), Show Toolbar (editar inline sobre la nota),
-  Editar, Fijar, Bloquear, Archivar, Eliminar.
-- ✅ **Asistentes IA** (tecla `i`): tarjetas con favicon original,
-  agregar/editar/eliminar.
-- ✅ **Etiquetas con 22 colores** + gestor completo.
-- ✅ **Atajos de teclado**: h, i, 1-9, n, g, l, k, ? , Esc.
-- ✅ **Tema inicia en claro** por defecto.
-- ✅ **PWA**: instalable en iPad (Compartir → Agregar a pantalla de inicio).
+**Extensión v1.4.0:** tema automático (theme.js, sin inline → sin CSP) ·
+iconos lucide con fallback SVG · highlighter inteligente (no estorba al copiar).
 
-### Extensión de Chrome (v1.4.0)
-- ✅ `theme.js`: tema claro/oscuro automático según el sistema (sin inline
-  scripts → evita error CSP).
-- ✅ `save.html` con variables CSS `[data-theme="light"]`.
-- ✅ `save.js`: colecciones con iconos `lucide:...` muestran SVG elegante.
-- ✅ `highlighter.js` **inteligente**: espera 700 ms y se cancela si copias
-  (Ctrl+C / Copiar), no estorba al seleccionar texto.
-
----
-
-## 7. ⌨️ COMANDOS Y TRUCOS RECURRENTES
+## 7. ⌨️ COMANDOS
 
 ```bash
 git add .
 git commit -m "mensaje"
-git push            # → Vercel despliega solo (2-3 min)
+git push          # Vercel despliega solo (2-3 min)
 ```
 
-- Recarga dura: `Ctrl + Shift + R`
-- Si Vercel muestra la app VIEJA → el build falló:
-  Vercel → Deployments → clic en el deploy rojo → leer error TypeScript.
-- Windows oculta extensiones de archivo → activar "Extensiones de nombre de
-  archivo" (evita `apple-icon.png.png`).
+Recarga dura: `Ctrl + Shift + R` · Si Vercel muestra app vieja → build falló →
+ver Deployments rojos.
 
----
+## 8. 📚 LECCIONES APRENDIDAS
 
-## 8. 📚 LECCIONES APRENDIDAS (para no repetir errores)
+1. Vercel sirve la última versión que compiló (si hay error TS, muestra la vieja).
+2. iOS aísla almacenamiento de PWAs → magic links no entran → login con contraseña.
+3. `confirmed_at` de Supabase es columna generada → no se actualiza a mano.
+4. MV3 no permite scripts inline (CSP) → JS en archivos externos.
+5. Windows oculta extensiones → `apple-icon.png.png`.
+6. En táctil no existe `hover` → CSS `@media (hover:none)` para mostrar acciones.
+7. `localStorage` es por dispositivo → orden del sidebar se sincroniza con
+   `user_preferences` en Supabase.
 
-1. **Vercel sirve la última versión que compiló**: si hay error de TypeScript,
-   la web sigue mostrando la app vieja aunque el push haya subido.
-2. **iOS aísla el almacenamiento de las PWA**: los magic links abren en Safari
-   y la sesión no llega a la app instalada → por eso se usó **login con
-   contraseña**.
-3. **Extensiones MV3 no permiten scripts inline** (CSP) → todo JS en archivos
-   externos (`theme.js`).
-4. **`confirmed_at` de Supabase es columna generada** → no se actualiza a mano.
+## 9. 📋 PENDIENTES
 
----
+- [ ] Icono pantalla de inicio iPad (reintentar con calma: verificar
+  `/apple-touch-icon.png` y re-agregar a inicio).
+- [ ] Revisión a fondo del iPad por Duglass (avisará fallos).
+- [x] Logo: queda el emoji 🔖 (decisión tomada).
 
-## 9. 📋 PENDIENTES (PRÓXIMAS SESIONES)
-
-### 🔴 Mañana (17 ago 2026)
-- [ ] **Sidebar en iPad**: al estar colapsado (`md:w-16`) se expande solo con
-  `hover`, y el iPad es táctil → no se ven colecciones/etiquetas al expandir.
-  Arreglo previsto: expansión por TOQUE + scroll interno en modo colapsado.
-- [ ] Revisión a fondo de la app en iPad (funciones que fallen en táctil).
-
-### 🟡 En espera
-- [ ] Icono de pantalla de inicio del iPad (apple-touch-icon) — pausado.
-- [ ] Posible uso futuro de la cuenta personal duglasbator@gmail.com.
-
----
-
-## 10. 🗓️ HISTORIAL DE VERSIONES (16 ago 2026)
+## 10. 🗓️ VERSIONES
 
 ```
-v1.5  → Home, sidebar reordenable, IA, notas Boardly, 22 colores, login contraseña
-v1.4.0 (extensión) → tema automático + iconos lucide + highlighter inteligente
+v1.5 (día 1) → Home, IA, notas Boardly, 22 colores, login contraseña
+v1.6 (día 2) → sidebar sincronizado, etiquetas en header, cuadrícula limpia,
+               acciones táctiles, botón 📁+ en header
+ext v1.4.0   → tema automático + highlighter inteligente
 ```
 
----
-
-*Fin de la bitácora del día 1. "De no saber programar a tener una app completa
-en producción con extensión de Chrome y app de iPad." — Duglass & Qwen 🚀*
+*Fin de la bitácora v2 — "De no saber programar a una app completa en
+producción." — Duglass & Qwen 🚀*
