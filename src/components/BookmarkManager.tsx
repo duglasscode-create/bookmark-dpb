@@ -743,8 +743,8 @@ export function BookmarkManager({
             )}
           </p>
         </div>
-      ) : viewMode === "grid" ? (
-        <div className={`grid gap-4 ${responsiveGridClass}`}>
+            ) : viewMode === "grid" ? (
+        <div className={`view-mode-grid grid gap-4 ${responsiveGridClass}`}>
           {filteredAndSortedBookmarks.map((bookmark) => (
             <BookmarkCard
               key={bookmark.id}

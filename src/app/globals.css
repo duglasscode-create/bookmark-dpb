@@ -178,4 +178,16 @@ input[type="range"]::-moz-range-thumb {
   .group-hover\:flex {
     display: flex !important;
   }
+}/* ============================================
+   VISTA CUADRÍCULA: ocultar los botones de
+   acción (editar, favorito, fijar, papelera)
+   para mantener las tarjetas limpias.
+   En vista Lista siguen apareciendo.
+   ============================================ */
+.view-mode-grid .group-hover\:flex {
+  display: none !important;
+}
+.view-mode-grid .group-hover\:opacity-100 {
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
