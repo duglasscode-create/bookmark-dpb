@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+iimport { useState, useEffect } from "react";
 import type { ReactNode } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { IconDisplay } from "./IconPicker";
 import { normalizeColor } from "@/utils/notionColors";
 import {
@@ -165,6 +166,7 @@ export function Sidebar({
   isMobileOpen,
   onMobileClose,
 }: SidebarProps) {
+    const supabase = createClient();
   const [order, setOrder] = useState<string[]>([]);
   const [sidebarDragId, setSidebarDragId] = useState<string | null>(null);
   const [sidebarDragOverId, setSidebarDragOverId] = useState<string | null>(null);
