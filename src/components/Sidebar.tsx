@@ -170,19 +170,40 @@ export function Sidebar({
   const [sidebarDragOverId, setSidebarDragOverId] = useState<string | null>(null);
   const [expandedCollections, setExpandedCollections] = useState<Set<string>>(new Set());
   const [desktopExpanded, setDesktopExpanded] = useState(false);
+  const [orderLoaded, setOrderLoaded] = useState(false);
 
+  // Cargar orden desde Supabase al montar
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedOrder = localStorage.getItem("sidebarOrder");
-      if (savedOrder) {
-        try {
-          setOrder(JSON.parse(savedOrder));
-        } catch {
-          setOrder([]);
+    const loadOrderFromSupabase = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("user_preferences")
+          .select("sidebar_order")
+          .eq("user_id", userId)
+          .single();
+
+        if (!error && data?.sidebar_order) {
+          setOrder(data.sidebar_order);
+        } else {
+          // Si no existe, intentar desde localStorage como fallback
+          const savedOrder = localStorage.getItem("sidebarOrder");
+          if (savedOrder) {
+            try {
+              setOrder(JSON.parse(savedOrder));
+            } catch {
+              setOrder([]);
+            }
+          }
         }
+      } catch (error) {
+        console.error("Error cargando orden del sidebar:", error);
+      } finally {
+        setOrderLoaded(true);
       }
-    }
-  }, []);
+    };
+
+    loadOrderFromSupabase();
+  }, [userId]);
 
   const toggleExpanded = (collectionId: string) => {
     setExpandedCollections((prev) => {
@@ -216,9 +237,29 @@ export function Sidebar({
     return [...valid, ...missing];
   };
 
-  const saveOrder = (ids: string[]) => {
+  const saveOrder = async (ids: string[]) => {
     setOrder(ids);
-    localStorage.setItem("sidebarOrder", JSON.stringify(ids));
+    localStorage.setItem("sidebarOrder", JSON.stringify(ids)); // Caché local
+
+    // Guardar en Supabase
+    try {
+      const { error } = await supabase
+        .from("user_preferences")
+        .upsert(
+          {
+            user_id: userId,
+            sidebar_order: ids,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
+
+      if (error) {
+        console.error("Error guardando orden en Supabase:", error);
+      }
+    } catch (error) {
+      console.error("Error guardando orden:", error);
+    }
   };
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
@@ -227,7 +268,7 @@ export function Sidebar({
     setTimeout(() => setSidebarDragId(id), 0);
   };
 
-  const handleDrop = (e: React.DragEvent, targetId: string) => {
+  const handleDrop = async (e: React.DragEvent, targetId: string) => {
     e.preventDefault();
     e.stopPropagation();
     const dragged = e.dataTransfer.getData("text/plain") || sidebarDragId;
@@ -238,7 +279,7 @@ export function Sidebar({
       if (from !== -1 && to !== -1) {
         ids.splice(from, 1);
         ids.splice(to, 0, dragged);
-        saveOrder(ids);
+        await saveOrder(ids);
       }
     }
     setSidebarDragId(null);
@@ -463,6 +504,10 @@ export function Sidebar({
     );
   };
 
+  if (!orderLoaded) {
+    return null; // Esperar a que cargue el orden
+  }
+
   return (
     <>
       {isMobileOpen && (
@@ -488,11 +533,9 @@ export function Sidebar({
             className="flex items-center gap-3"
             title="Ir al inicio (Home)"
           >
-            <img
-              src="/icon-512.png"
-              alt="Bookmark DPB"
-              className="h-9 w-9 shrink-0 rounded-xl object-cover"
-            />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-lg">
+              🔖
+            </div>
             <div className="min-w-0 text-left">
               <h1
                 className={`text-sm font-bold whitespace-nowrap ${

@@ -703,7 +703,13 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
               </p>
             </div>
           </div>
-
+<button
+  onClick={() => setIsCollectionModalOpen(true)}
+  className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+  title="Nueva colección"
+>
+  <FolderPlus size={16} />
+</button>
           <div className="flex items-center gap-2 md:gap-3">
             {showViewControls && (
               <div className="hidden md:block">
@@ -730,7 +736,17 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
                 <span className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>🔎</span>
               </div>
             )}
-
+<button
+  onClick={() => setIsModalOpen(true)}
+  className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
+    isDarkMode
+      ? "border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white"
+      : "border-slate-300 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+  }`}
+  title="Nueva colección"
+>
+  <FolderPlus size={16} />
+</button>
             <button
               onClick={() => setIsAddModalOpen(true)}
               className={`flex h-9 w-9 items-center justify-center rounded-lg border transition ${
