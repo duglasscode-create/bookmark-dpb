@@ -199,7 +199,7 @@ export function Sidebar({
   const [sidebarDragOverId, setSidebarDragOverId] = useState<string | null>(null);
   const [tagsCollapsed, setTagsCollapsed] = useState(false);
   const [expandedCollections, setExpandedCollections] = useState<Set<string>>(new Set());
-
+  const [desktopExpanded, setDesktopExpanded] = useState(false);
   useEffect(() => {
     if (typeof window !== "undefined") {
       setTagsCollapsed(localStorage.getItem("tagsCollapsed") === "true");
@@ -586,7 +586,7 @@ export function Sidebar({
         className={`
           fixed inset-y-0 left-0 z-50 w-72 transform transition-all duration-300 ease-in-out
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
-          md:static md:translate-x-0 md:w-16 md:hover:w-64
+                    md:static md:translate-x-0 ${desktopExpanded ? "md:w-64" : "md:w-16"} md:hover:w-64
           flex h-full flex-col overflow-hidden border-r border-[color:var(--border-color)] bg-[var(--bg-secondary)]
         `}
       >
@@ -619,7 +619,26 @@ export function Sidebar({
             </div>
           </button>
 
-          <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1">
+            <button
+              onClick={() => setDesktopExpanded(!desktopExpanded)}
+              className={`hidden md:flex h-8 w-8 items-center justify-center rounded-lg transition ${
+                isDarkMode
+                  ? "text-slate-400 hover:bg-slate-800 hover:text-white"
+                  : "text-slate-500 hover:bg-slate-200 hover:text-slate-900"
+              }`}
+              title={desktopExpanded ? "Contraer panel" : "Expandir panel"}
+            >
+              <svg
+                className={`h-4 w-4 transition-transform ${desktopExpanded ? "rotate-180" : ""}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
             <button
               onClick={onNewCollection}
               className={`hidden md:flex h-8 w-8 items-center justify-center rounded-lg transition ${
@@ -648,7 +667,7 @@ export function Sidebar({
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 md:hover:p-4 transition-all whitespace-nowrap">
+                <nav className={`flex-1 overflow-y-auto overflow-x-hidden p-2 md:hover:p-4 transition-all whitespace-nowrap ${desktopExpanded ? "md:p-4" : ""}`}>
           <button
             onClick={() => handleSelectFilter("home")}
             className={`mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition ${
