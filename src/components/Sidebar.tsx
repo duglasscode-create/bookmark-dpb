@@ -18,6 +18,7 @@ import {
   Target,
   StickyNote,
   Bot,
+  KeyRound,
   Plus,
 } from "lucide-react";
 
@@ -143,6 +144,13 @@ const NAV_ITEMS: NavItem[] = [
     icon: <Bot size={17} />,
     activeDark: "bg-teal-600/20 text-teal-400",
     activeLight: "bg-teal-100 text-teal-700",
+  },
+  {
+    id: "accounts",
+    label: "Cuentas",
+    icon: <KeyRound size={17} />,
+    activeDark: "bg-sky-600/20 text-sky-400",
+    activeLight: "bg-sky-100 text-sky-700",
   },
 ];
 

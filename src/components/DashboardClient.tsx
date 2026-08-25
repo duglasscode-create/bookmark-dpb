@@ -14,6 +14,7 @@ import { ActivityPanel } from "./ActivityPanel";
 import { AutoRulesPanel } from "./AutoRulesPanel";
 import { NotesPanel } from "./NotesPanel";
 import { AiPanel } from "./AiPanel";
+import { AccountsPanel } from "./AccountsPanel";
 import { CollectionModal } from "./CollectionModal";
 import { EditCollectionModal } from "./EditCollectionModal";
 import { ImportModal } from "./ImportModal";
@@ -279,6 +280,9 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
           break;
         case "i":
           setActiveFilter("ai");
+          break;
+                  case "c":
+          setActiveFilter("accounts");
           break;
         case "1":
           setActiveFilter("all");
@@ -554,7 +558,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
     if (activeFilter === "pending_read") return "🔖 Leer después";
     if (activeFilter === "notes") return "📝 Notas";
     if (activeFilter === "ai") return "🤖 Asistentes IA";
-
+    if (activeFilter === "accounts") return "🔐 Cuentas";
     if (activeFilter.startsWith("tag:")) {
       const tagId = activeFilter.replace("tag:", "");
       const tag = tags.find((t) => t.id === tagId);
@@ -589,6 +593,7 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
     activeFilter !== "auto_rules" &&
     activeFilter !== "notes" &&
     activeFilter !== "ai" &&
+    activeFilter !== "accounts" &&
     !activeFilter.startsWith("tag:");
 
   const renderContent = () => {
@@ -640,7 +645,9 @@ export function DashboardClient({ userId, userEmail }: DashboardClientProps) {
     if (activeFilter === "ai") {
       return <AiPanel userId={userId} isDarkMode={isDarkMode} />;
     }
-
+    if (activeFilter === "accounts") {
+      return <AccountsPanel userId={userId} isDarkMode={isDarkMode} />;
+    }
     return (
       <BookmarkManager
         userId={userId}
