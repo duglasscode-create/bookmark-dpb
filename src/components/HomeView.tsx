@@ -68,7 +68,7 @@ export function HomeView({
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
-   const [search, setSearch] = useState("");
+  const [search, setSearch] = useState("");
   const [homeNote, setHomeNote] = useState<{
     id: string;
     title: string;
@@ -81,12 +81,6 @@ export function HomeView({
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
-
-  useEffect(() => {
-    if (collections.length > 0) {
-      setExpanded(new Set(collections.filter((c) => !c.parent_id).map((c) => c.id)));
-    }
-  }, [collections]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -240,7 +234,6 @@ export function HomeView({
       ownBookmarks.length +
       childData.reduce((acc, cd) => acc + cd.books.length, 0);
 
-    // Si hay búsqueda y no hay coincidencias, ocultar la tarjeta
     if (
       q &&
       !nameMatch &&
@@ -435,7 +428,6 @@ export function HomeView({
 
   return (
     <div>
-      {/* Buscador */}
       <div className="mb-4">
         <div
           className={`relative max-w-md ${
@@ -461,13 +453,12 @@ export function HomeView({
       </div>
 
       <p className={`mb-4 text-sm ${isDarkMode ? "text-slate-500" : "text-slate-500"}`}>
-        Arrastra las tarjetas por su cabecera para reordenar · ⋯ para opciones
+        Arrastra las tarjetas por su cabecera para reordenar · ▼ para expandir · ⋯ para opciones
       </p>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {rootCollections.map(renderCollectionCard)}
 
-        {/* Tarjeta de Notas: muestra la nota fijada o la última nota */}
         <div className="flex flex-col overflow-visible rounded-2xl border border-[color:var(--card-border)] bg-[var(--card-bg)] shadow-sm">
           <div
             className="flex items-center gap-2 rounded-t-2xl px-4 py-3"
