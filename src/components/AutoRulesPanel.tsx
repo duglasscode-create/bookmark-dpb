@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { applyAutoRulesToAll } from "@/utils/autoRules";
+import { IconDisplay } from "./IconPicker";
 
 type Collection = {
   id: string;
@@ -31,12 +32,12 @@ export function AutoRulesPanel({ userId }: AutoRulesPanelProps) {
   const [applying, setApplying] = useState(false);
   const [applyResult, setApplyResult] = useState<string | null>(null);
 
-  // Estados para crear nueva regla
   const [newRuleName, setNewRuleName] = useState("");
   const [newRuleType, setNewRuleType] = useState<"domain" | "keyword">("domain");
   const [newRuleValue, setNewRuleValue] = useState("");
   const [newRuleCollection, setNewRuleCollection] = useState("");
   const [creating, setCreating] = useState(false);
+  const [isCollectionPickerOpen, setIsCollectionPickerOpen] = useState(false);
 
   useEffect(() => {
     fetchRules();
@@ -150,23 +151,28 @@ export function AutoRulesPanel({ userId }: AutoRulesPanelProps) {
 
     setApplying(false);
 
-    // Limpiar el mensaje después de 5 segundos
     setTimeout(() => setApplyResult(null), 5000);
   };
+
+  const selectedCollection = collections.find((c) => c.id === newRuleCollection);
 
   const getCollectionName = (collectionId: string | null): string => {
     if (!collectionId) return "Sin colección";
     const collection = collections.find((c) => c.id === collectionId);
-    return collection
-      ? `${collection.icon || "📁"} ${collection.name}`
-      : "Colección eliminada";
+    return collection ? collection.name : "Colección eliminada";
+  };
+
+  const renderRuleIcon = (collectionId: string | null) => {
+    if (!collectionId) return <span>📁</span>;
+    const col = collections.find((c) => c.id === collectionId);
+    if (!col?.icon) return <span>📁</span>;
+    return <IconDisplay icon={col.icon} size={14} />;
   };
 
   const activeRulesCount = rules.filter((r) => r.is_active).length;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-white flex items-center gap-2">
@@ -189,14 +195,12 @@ export function AutoRulesPanel({ userId }: AutoRulesPanelProps) {
         )}
       </div>
 
-      {/* Resultado de aplicar */}
       {applyResult && (
         <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
           <p className="text-sm text-emerald-400">{applyResult}</p>
         </div>
       )}
 
-      {/* Info sobre cómo funciona */}
       <div className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3">
         <p className="text-sm text-blue-400 flex items-start gap-2">
           <span className="shrink-0">💡</span>
@@ -208,14 +212,12 @@ export function AutoRulesPanel({ userId }: AutoRulesPanelProps) {
         </p>
       </div>
 
-      {/* Crear nueva regla */}
       <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
         <h3 className="mb-4 text-base font-semibold text-white flex items-center gap-2">
           ➕ Crear nueva regla
         </h3>
 
         <div className="grid gap-4 md:grid-cols-2">
-          {/* Nombre de la regla */}
           <div className="md:col-span-2">
             <label className="mb-2 block text-sm font-medium text-slate-300">
               Nombre de la regla
@@ -229,7 +231,6 @@ export function AutoRulesPanel({ userId }: AutoRulesPanelProps) {
             />
           </div>
 
-          {/* Tipo de coincidencia */}
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-300">
               Si coincide con...
@@ -246,7 +247,6 @@ export function AutoRulesPanel({ userId }: AutoRulesPanelProps) {
             </select>
           </div>
 
-          {/* Valor a coincidir */}
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-300">
               {newRuleType === "domain" ? "Dominio" : "Palabra clave"}
@@ -262,23 +262,73 @@ export function AutoRulesPanel({ userId }: AutoRulesPanelProps) {
             />
           </div>
 
-          {/* Colección destino */}
+          {/* Selector de colección personalizado con ICONOS REALES */}
           <div className="md:col-span-2">
             <label className="mb-2 block text-sm font-medium text-slate-300">
               Asignar a colección
             </label>
-            <select
-              value={newRuleCollection}
-              onChange={(e) => setNewRuleCollection(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-            >
-              <option value="">Selecciona una colección...</option>
-              {collections.map((collection) => (
-                <option key={collection.id} value={collection.id}>
-                  {collection.icon || "📁"} {collection.name}
-                </option>
-              ))}
-            </select>
+
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsCollectionPickerOpen(!isCollectionPickerOpen)}
+                className="flex w-full items-center justify-between rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+              >
+                <span className="flex items-center gap-2">
+                  {selectedCollection ? (
+                    <>
+                      <IconDisplay icon={selectedCollection.icon} size={16} />
+                      <span>{selectedCollection.name}</span>
+                    </>
+                  ) : (
+                    <span className="text-slate-500">Selecciona una colección...</span>
+                  )}
+                </span>
+                <svg
+                  className={`h-4 w-4 transition-transform ${isCollectionPickerOpen ? "rotate-180" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {isCollectionPickerOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-30"
+                    onClick={() => setIsCollectionPickerOpen(false)}
+                  ></div>
+                  <div className="absolute left-0 top-full z-40 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-slate-700 bg-slate-800 py-1 shadow-xl">
+                    {collections.length === 0 ? (
+                      <p className="px-4 py-3 text-sm text-slate-500">
+                        No tienes colecciones creadas
+                      </p>
+                    ) : (
+                      collections.map((collection) => (
+                        <button
+                          key={collection.id}
+                          type="button"
+                          onClick={() => {
+                            setNewRuleCollection(collection.id);
+                            setIsCollectionPickerOpen(false);
+                          }}
+                          className={`flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-white transition hover:bg-slate-700 ${
+                            newRuleCollection === collection.id
+                              ? "bg-blue-600/20"
+                              : ""
+                          }`}
+                        >
+                          <IconDisplay icon={collection.icon} size={16} />
+                          <span className="truncate">{collection.name}</span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -291,7 +341,6 @@ export function AutoRulesPanel({ userId }: AutoRulesPanelProps) {
         </button>
       </div>
 
-      {/* Lista de reglas */}
       <div>
         <h3 className="mb-3 text-sm font-medium text-slate-300">
           📋 Tus reglas ({rules.length})
@@ -323,7 +372,6 @@ export function AutoRulesPanel({ userId }: AutoRulesPanelProps) {
                     : "border-slate-800 opacity-60"
                 }`}
               >
-                {/* Indicador de estado */}
                 <div
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-lg ${
                     rule.is_active ? "bg-blue-500/20" : "bg-slate-800"
@@ -332,25 +380,22 @@ export function AutoRulesPanel({ userId }: AutoRulesPanelProps) {
                   {rule.match_type === "domain" ? "🌐" : "🔤"}
                 </div>
 
-                {/* Info de la regla */}
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-white truncate">
-                    {rule.name}
-                  </p>
+                  <p className="font-medium text-white truncate">{rule.name}</p>
                   <p className="text-sm text-slate-400 mt-0.5">
                     {rule.match_type === "domain" ? "Dominio" : "Palabra clave"}:{" "}
                     <span className="text-blue-400 font-mono">
                       {rule.match_value}
                     </span>
                   </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    → {getCollectionName(rule.collection_id)}
+                  <p className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
+                    <span>→</span>
+                    <span className="inline-flex items-center">{renderRuleIcon(rule.collection_id)}</span>
+                    <span>{getCollectionName(rule.collection_id)}</span>
                   </p>
                 </div>
 
-                {/* Acciones */}
                 <div className="flex shrink-0 items-center gap-2">
-                  {/* Toggle activo */}
                   <button
                     onClick={() => handleToggleRule(rule)}
                     className={`relative h-6 w-11 rounded-full transition ${
@@ -359,16 +404,13 @@ export function AutoRulesPanel({ userId }: AutoRulesPanelProps) {
                     title={rule.is_active ? "Desactivar" : "Activar"}
                   >
                     <span
-                      className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${
-                        rule.is_active ? "left-5.5" : "left-0.5"
-                      }`}
+                      className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all`}
                       style={{
                         left: rule.is_active ? "22px" : "2px",
                       }}
                     ></span>
                   </button>
 
-                  {/* Eliminar */}
                   <button
                     onClick={() => handleDeleteRule(rule)}
                     className="rounded-lg p-2 text-slate-400 transition hover:bg-red-500/20 hover:text-red-400"
