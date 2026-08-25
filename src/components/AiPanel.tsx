@@ -10,6 +10,7 @@ type AiAssistant = {
   name: string;
   url: string;
   icon: string | null;
+  position: number;
 };
 
 type AiPanelProps = {
@@ -44,6 +45,8 @@ export function AiPanel({ userId, isDarkMode }: AiPanelProps) {
   const [url, setUrl] = useState("");
   const [icon, setIcon] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAis();
@@ -54,26 +57,26 @@ export function AiPanel({ userId, isDarkMode }: AiPanelProps) {
     setLoading(true);
     const { data, error } = await supabase
       .from("ai_assistants")
-      .select("id, name, url, icon")
+      .select("id, name, url, icon, position")
       .eq("user_id", userId)
-      .order("created_at", { ascending: true });
+      .order("position", { ascending: true });
 
     if (!error && data) {
       if (data.length === 0) {
-        // Sembrar asistentes por defecto la primera vez
         await supabase.from("ai_assistants").insert(
-          DEFAULT_AIS.map((ai) => ({
+          DEFAULT_AIS.map((ai, index) => ({
             user_id: userId,
             name: ai.name,
             url: ai.url,
             icon: null,
+            position: index,
           }))
         );
         const { data: seeded } = await supabase
           .from("ai_assistants")
-          .select("id, name, url, icon")
+          .select("id, name, url, icon, position")
           .eq("user_id", userId)
-          .order("created_at", { ascending: true });
+          .order("position", { ascending: true });
         setAis(seeded || []);
       } else {
         setAis(data);
@@ -120,6 +123,7 @@ export function AiPanel({ userId, isDarkMode }: AiPanelProps) {
         name: name.trim(),
         url: finalUrl,
         icon: icon || null,
+        position: ais.length,
       });
     }
 
@@ -139,6 +143,53 @@ export function AiPanel({ userId, isDarkMode }: AiPanelProps) {
     fetchAis();
   };
 
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id);
+    setTimeout(() => setDraggedId(id), 0);
+  };
+
+  const handleDragOver = (e: React.DragEvent, id: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (id !== draggedId) setDragOverId(id);
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const dragged = e.dataTransfer.getData("text/plain") || draggedId;
+    if (dragged && dragged !== targetId) {
+      const ids = ais.map((ai) => ai.id);
+      const from = ids.indexOf(dragged);
+      const to = ids.indexOf(targetId);
+      if (from !== -1 && to !== -1) {
+        ids.splice(from, 1);
+        ids.splice(to, 0, dragged);
+
+        // Actualizar estado local inmediatamente
+        setAis((prev) => {
+          const byId = new Map(prev.map((ai) => [ai.id, ai]));
+          return ids.map((id, index) => ({ ...byId.get(id)!, position: index }));
+        });
+
+        // Guardar en Supabase
+        await Promise.all(
+          ids.map((id, index) =>
+            supabase.from("ai_assistants").update({ position: index }).eq("id", id)
+          )
+        );
+      }
+    }
+    setDraggedId(null);
+    setDragOverId(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedId(null);
+    setDragOverId(null);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -151,8 +202,7 @@ export function AiPanel({ userId, isDarkMode }: AiPanelProps) {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <p className={`text-sm ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
-          {ais.length} asistente{ais.length !== 1 ? "s" : ""} · Haz clic en la
-          tarjeta para abrir el chat
+          {ais.length} asistente{ais.length !== 1 ? "s" : ""} · Arrastra para reordenar · Haz clic para abrir
         </p>
         <button
           onClick={openNew}
@@ -162,15 +212,28 @@ export function AiPanel({ userId, isDarkMode }: AiPanelProps) {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+      <div
+        className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6"
+        onDragOver={(e) => e.preventDefault()}
+      >
         {ais.map((ai) => (
           <div
             key={ai.id}
-            className={`group relative flex flex-col items-center gap-3 rounded-2xl border border-[color:var(--card-border)] bg-[var(--card-bg)] p-5 shadow-sm transition hover:shadow-xl`}
+            draggable
+            onDragStart={(e) => handleDragStart(e, ai.id)}
+            onDragOver={(e) => handleDragOver(e, ai.id)}
+            onDrop={(e) => handleDrop(e, ai.id)}
+            onDragEnd={handleDragEnd}
+            className={`group relative flex flex-col items-center gap-3 rounded-2xl border border-[color:var(--card-border)] bg-[var(--card-bg)] p-5 shadow-sm transition hover:shadow-xl cursor-grab active:cursor-grabbing ${
+              dragOverId === ai.id ? "ring-2 ring-blue-500" : ""
+            } ${draggedId === ai.id ? "opacity-50" : ""}`}
           >
             <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition group-hover:opacity-100">
               <button
-                onClick={() => openEdit(ai)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openEdit(ai);
+                }}
                 className={`flex h-7 w-7 items-center justify-center rounded-lg transition ${
                   isDarkMode
                     ? "text-slate-400 hover:bg-slate-700 hover:text-white"
@@ -181,7 +244,10 @@ export function AiPanel({ userId, isDarkMode }: AiPanelProps) {
                 <Pencil size={13} />
               </button>
               <button
-                onClick={() => handleDelete(ai)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(ai);
+                }}
                 className="flex h-7 w-7 items-center justify-center rounded-lg text-red-500 transition hover:bg-red-500/10"
                 title="Eliminar"
               >
@@ -233,7 +299,6 @@ export function AiPanel({ userId, isDarkMode }: AiPanelProps) {
         ))}
       </div>
 
-      {/* Modal agregar/editar IA */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
